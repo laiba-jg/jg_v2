@@ -1,0 +1,11 @@
+node_modules
+.DS_Store
+.env
+.vscode
+.idea
+*.log
+*.tmp
+*.cache
+yarn-error.log
+npm-debug.log
+dist
