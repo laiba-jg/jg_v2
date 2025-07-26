@@ -26,6 +26,9 @@ const CustomerSchema = new mongoose.Schema({
     gender: { type: String, enum: ['Male', 'Female', 'Other', 'Unspecified'], required: true },
     email: { type: String, required: false, unique: true },
     emailVerified: { type: Boolean, required: false, default: false },
+    isMpinSet: { type: Boolean, required: false, default: false },
+    mpin: { type: Number },
+    wrongMpinCount: { type: Number, default: 0 },
     phone: {
         countryCode: { type: String, required: true },
         number: { type: String, required: true }
