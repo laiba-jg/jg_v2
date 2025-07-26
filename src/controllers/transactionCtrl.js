@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
+
 import logger from "../util/logger.js";
-import { created, internalServerError } from "../util/response.js";
-import { buyTransaction } from "../services/transactionSvc.js";
+import { created, internalServerError, success } from "../util/response.js";
+import { buyTransaction, sellTransaction, transactionSummaryByCustomerId } from "../services/transactionSvc.js";
 import NoKYCError from "../errors/NoKYCError.js";
 import KYCPendingError from "../errors/KYCPendingError.js";
 import KYCRejectedError from "../errors/KYCRejectedError.js";
@@ -8,55 +10,95 @@ import NoGoldPriceError from "../errors/NoGoldPriceError.js";
 import InvalidAmountError from "../errors/InvalidAmountError.js";
 import InvalidQuantityError from "../errors/InvalidQuantity.js";
 import InvalidTransactionError from "../errors/InvalidTransactionError.js";
+import CustomerNotFoundError from "../errors/CustomerNotFound.js";
+import NotEnoughGoldError from "../errors/NotEnoughGoldError.js";
 
 
 export const buy = async (req, res) => {
     try {
         const customerId = req.userId;
         const data = req.body;
-        console.log('data', data);
         await buyTransaction(customerId, data);
         return created(res);
     } catch (err) {
-        console.log(err);
         const logObject = {
             error: err,
             body: req.body,
             userId: req.userId
         };
-        logger.error('Error while creating transaction:', logObject);
+        logger.error('Error while creating buy transaction:', logObject);
+        return handleError(err, res);
+    }
+}
+
+export const sell = async (req, res) => {
+    try {
+        const customerId = req.userId;
+        const data = req.body;
+        await sellTransaction(customerId, data);
+        return created(res);
+    } catch (err) {
+        console.error(err);
+        const logObject = {
+            error: err,
+            body: req.body,
+            userId: req.userId
+        };
+        logger.error('Error while creating sell transaction:', logObject);
+        return handleError(err, res);
+    }
+}
+
+export const summary = async (req, res) => {
+    try {
+        const customerId = req.params.customerId;
+        if (!mongoose.Types.ObjectId.isValid(customerId))
+            return res.status(400).json({ message: 'Invalid customer ID', key: 'invalidCustomerId' });
+
+        const [summary] = await transactionSummaryByCustomerId(customerId);
+        if (summary) {
+            summary.availableToSell = summary.availableToSell < 0 ? 0 : summary.availableToSell;
+        }
+        return success(res, summary);
+    } catch (err) {
+        console.error(err);
+        const logObject = {
+            error: err,
+            params: req.params,
+            userId: req.userId
+        };
+        logger.error('Error while fetching customer transaction summary:', logObject);
         return handleError(err, res);
     }
 }
 
 function handleError(err, res) {
-    if (err instanceof InvalidTransactionError) {
-        logger.error('Invalid transaction error:', err);
+    if (err instanceof CustomerNotFoundError)
+        return res.status(err.status).json({ message: err.message, key: 'customerNotFound' });
+
+    if (err instanceof InvalidTransactionError)
         return res.status(err.status).json({ message: err.message, key: 'invalidTransaction' });
-    }
-    if (err instanceof NoKYCError) {
-        logger.error('NoKYCError:', err);
+
+    if (err instanceof NoKYCError)
         return res.status(err.status).json({ message: err.message, key: 'noKYC' });
-    }
-    if (err instanceof KYCPendingError) {
-        logger.error('KYCPendingError:', err);
+
+    if (err instanceof KYCPendingError)
         return res.status(err.status).json({ message: err.message, key: 'kycPending' });
-    }
-    if (err instanceof KYCRejectedError) {
-        logger.error('KYCRejectedError:', err);
+
+    if (err instanceof KYCRejectedError)
         return res.status(err.status).json({ message: err.message, key: 'kycRejected' });
-    }
-    if (err instanceof InvalidQuantityError) {
-        logger.error('InvalidQuantityError:', err);
+
+    if (err instanceof InvalidQuantityError)
         return res.status(err.status).json({ message: err.message, key: 'invalidQuantity' });
-    }
-    if (err instanceof InvalidAmountError) {
-        logger.error('InvalidAmountError:', err);
+
+    if (err instanceof InvalidAmountError)
         return res.status(err.status).json({ message: err.message, key: 'invalidAmount' });
-    }
-    if (err instanceof NoGoldPriceError) {
-        logger.error('NoGoldPriceError:', err);
+
+    if (err instanceof NoGoldPriceError)
         return res.status(err.status).json({ message: err.message, key: 'noGoldPrice' });
-    }
+
+    if (err instanceof NotEnoughGoldError)
+        return res.status(err.status).json({ message: err.message, key: 'notEnoughGold' });
+
     return internalServerError(res);
-}   
+}

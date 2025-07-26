@@ -11,7 +11,8 @@ const TransactionSchema = new mongoose.Schema({
     transferCharges: { type: Number, default: 0 },
     quantity: { type: Number, required: true },
     amount: { type: Number, required: true },
-    costAmount: { type: Number, required: true },
+    costAmount: { type: Number, required: false },
+    sellPrice: { type: Number, required: false },
     paymentMode: {
         type: String,
         enum: ['CreditCard', 'DebitCard', 'BankTransfer', 'GooglePay', 'ApplePay'],
@@ -27,8 +28,8 @@ const TransactionSchema = new mongoose.Schema({
         enum: ['Pending', 'Completed', 'Failed', 'Cancelled'],
         default: 'Pending'
     },
-    paymentGateway: { type: String, required: true },
-    paymentTransactionId: { type: String, required: true },
+    paymentGateway: { type: String, required: false },
+    paymentTransactionId: { type: String, required: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

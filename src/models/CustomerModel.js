@@ -28,6 +28,8 @@ const CustomerSchema = new mongoose.Schema({
     emailVerified: { type: Boolean, required: false, default: false },
     isMpinSet: { type: Boolean, required: false, default: false },
     mpin: { type: Number },
+    locked: { type: Boolean, default: false },
+    lockedReason: { type: String, default: '' },
     wrongMpinCount: { type: Number, default: 0 },
     phone: {
         countryCode: { type: String, required: true },

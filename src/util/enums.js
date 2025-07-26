@@ -33,6 +33,6 @@ export const TransactionType = {
 };
 
 export const PaymentGateway = {
-    MY_FATROOH: "MyFatrooh",
+    MY_FATOORAH: "MyFatoorah",
     LEAN_TECH: "LeanTech",
 };

@@ -1,5 +1,5 @@
 import { getLatestGoldPrice } from "../repositories/goldPriceRepo.js";
-import { createTransaction } from "../repositories/transactionRepo.js";
+import { createTransaction, getCustomerTransactionSummary } from "../repositories/transactionRepo.js";
 import { getCustomerById } from "../repositories/customerRepo.js";
 import CustomerNotFoundError from "../errors/CustomerNotFound.js";
 import KYCPendingError from "../errors/KYCPendingError.js";
@@ -8,10 +8,10 @@ import NoKYCError from "../errors/NoKYCError.js";
 import NoGoldPriceError from "../errors/NoGoldPriceError.js";
 import InvalidTransactionError from "../errors/InvalidTransactionError.js";
 import InvalidQuantityError from "../errors/InvalidQuantity.js";
-import { KYCStatus, PaymentMode, TransactionType } from "../util/enums.js";
+import { KYCStatus, PaymentGateway, PaymentMode, TransactionType } from "../util/enums.js";
 import Decimal from "decimal.js";
 import InvalidAmountError from "../errors/InvalidAmountError.js";
-
+import NotEnoughGoldError from "../errors/NotEnoughGoldError.js";
 
 const hasKYC = (customer) => {
     return customer.kyc.status === KYCStatus.APPROVED ||
@@ -104,7 +104,6 @@ const buyGoldByAmt = async (customerId, data) => {
 
 export const buyTransaction = async (customerId, data) => {
     const customer = await getCustomerById(customerId);
-    console.log('Customer:', customer.kyc.kycStatus);
     if (!customer) throw new CustomerNotFoundError();
     if (!customer.kyc || !customer.kyc.kycStatus) throw new NoKYCError();
     if (customer.kyc.kycStatus === KYCStatus.PENDING) throw new KYCPendingError();
@@ -119,4 +118,48 @@ export const buyTransaction = async (customerId, data) => {
     }
 
     throw new NoKYCError('Customer does not have KYC approved');
+}
+
+export const sellTransaction = async (customerId, data) => {
+    const customer = await getCustomerById(customerId);
+    if (!customer) throw new CustomerNotFoundError();
+    if (!customer.kyc || !customer.kyc.kycStatus) throw new NoKYCError();
+    if (customer.kyc.kycStatus === KYCStatus.PENDING) throw new KYCPendingError();
+    if (customer.kyc.kycStatus === KYCStatus.REJECTED) throw new KYCRejectedError();
+
+    if (hasKYC(customer))
+        return sellGold(customerId, data);
+
+    throw new NoKYCError('Customer does not have KYC approved');
+};
+
+export const transactionSummaryByCustomerId = async (customerId) => getCustomerTransactionSummary(customerId);
+
+async function sellGold(customerId, data) {
+    const { quantity } = data;
+    if (quantity <= 0) throw new InvalidQuantityError();
+    const latestGoldPrice = await getLatestGoldPrice();
+    if (!latestGoldPrice) throw new NoGoldPriceError();
+
+    const [transactionSummary] = await getCustomerTransactionSummary(customerId);
+    const { availableToSell } = transactionSummary;
+    if (availableToSell < quantity) throw new NotEnoughGoldError();
+
+    const retailPrice = new Decimal(latestGoldPrice.price24K);
+    const sellPrice = new Decimal(latestGoldPrice.price24K).mul(0.96).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    const totalAmount = sellPrice.mul(quantity).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    const transaction = {
+        transactionType: TransactionType.SELL,
+        customerId: customerId,
+        details: `Buy ${quantity} grams of gold`,
+        retailPrice,
+        sellPrice,
+        amount: totalAmount,
+        quantity,
+        paymentMode: PaymentMode.BANK_TRANSFER,
+        transferCharges: 0,
+        paymentGateway: PaymentGateway.MY_FATROOH,
+        paymentTransactionId: '',
+    };
+    return createTransaction(transaction);
 }
