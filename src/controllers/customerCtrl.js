@@ -1,4 +1,4 @@
-import { createProfile } from '../services/customerSvc.js';
+import { createProfile, updateProfile as updateCustomerProfile, updateKYCStatus } from '../services/customerSvc.js';
 import logger from '../util/logger.js';
 import { created, internalServerError, noContent, notFound, success } from '../util/response.js';
 
@@ -32,10 +32,10 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
     try {
         const id = req.params.id;
-        await updateProfile(id, req.body);
-        return noContent();
+        await updateCustomerProfile(id, req.body);
+        return noContent(res);
     } catch (err) {
-        logger.error('Error updating profile:', req.params.id, req.body, err);
+        logger.error('Error updating profile:', err, req.params.id, req.body);
         return internalServerError(res);
     }
 }
@@ -43,8 +43,8 @@ export const updateProfile = async (req, res) => {
 export const updateKyc = async (req, res) => {
     try {
         const id = req.params.id;
-        await updateKyc(id, req.body);
-        return noContent();
+        await updateKYCStatus(id, req.body);
+        return noContent(res);
     } catch (err) {
         logger.error('Error updating kyc:', req.params.id, req.body, err);
         return internalServerError(res);

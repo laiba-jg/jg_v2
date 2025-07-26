@@ -1,4 +1,4 @@
-import { create, getById, updateCustomer } from '../repositories/customerRepo.js';
+import { create, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { UserType } from '../util/enums.js';
 
 export async function createProfile(data) {
@@ -11,7 +11,7 @@ export async function createProfile(data) {
     return create(data);
 }
 
-export const getProfileById = async (id) => getById(id);
+export const getProfileById = async (id) => getCustomerById(id);
 
 export const updateProfile = async (id, data) => {
     delete data.createdAt;
@@ -22,6 +22,5 @@ export const updateProfile = async (id, data) => {
 
 // Only allow authorised person to update KYC status
 export const updateKYCStatus = async (id, kyc) => {
-    const data = { kyc, updatedAt: new Date() };
-    return updateCustomer(id, data);
+    return updateCustomer(id, kyc);
 }

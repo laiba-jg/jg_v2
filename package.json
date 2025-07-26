@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "compression": "^1.8.1",
+    "currency": "^4.1.0",
+    "decimal.js": "^10.6.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "helmet": "^8.1.0",

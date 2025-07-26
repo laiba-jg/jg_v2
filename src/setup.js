@@ -2,10 +2,13 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import express from 'express';
 import compression from 'compression';
+import mongoose from 'mongoose';
+
 import logger from './util/logger.js';
 import healthRoutes from './routes/healthRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
-import mongoose from 'mongoose';
+import transactionRoutes from './routes/transactionRoutes.js';
+import { authenticate } from './middlewares/auth.js';
 
 const setup = (app) => {
     app.use(helmet());
@@ -23,7 +26,9 @@ const setup = (app) => {
 
     // routes
     app.use('/api/v1', healthRoutes);
+
     app.use('/api/v1/profiles', customerRoutes);
+    app.use('/api/v1/transactions', authenticate, transactionRoutes);
 
     // 404 handler
     app.use((req, res, next) => {
