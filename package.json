@@ -9,6 +9,7 @@
     "dev": "nodemon src/index.js"
   },
   "dependencies": {
+    "accesscontrol": "^2.2.1",
     "compression": "^1.8.1",
     "crypto": "^1.0.1",
     "currency": "^4.1.0",
