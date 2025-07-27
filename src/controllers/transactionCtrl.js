@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 import logger from "../util/logger.js";
 import { created, internalServerError, success } from "../util/response.js";
-import { buyTransaction, sellTransaction, transactionSummaryByCustomerId } from "../services/transactionSvc.js";
+import { buyTransaction, redeemTransaction, sellTransaction, transactionSummaryByCustomerId } from "../services/transactionSvc.js";
 import NoKYCError from "../errors/NoKYCError.js";
 import KYCPendingError from "../errors/KYCPendingError.js";
 import KYCRejectedError from "../errors/KYCRejectedError.js";
@@ -65,6 +65,26 @@ export const summary = async (req, res) => {
         const logObject = {
             error: err,
             params: req.params,
+            userId: req.userId
+        };
+        logger.error('Error while fetching customer transaction summary:', logObject);
+        return handleError(err, res);
+    }
+}
+
+export const redeem = async (req, res) => {
+    try {
+        const customerId = req.userId;
+        if (!mongoose.Types.ObjectId.isValid(customerId))
+            return res.status(400).json({ message: 'Invalid customer ID', key: 'invalidCustomerId' });
+
+        await redeemTransaction(customerId, req.body);
+        return created(res);
+    } catch (err) {
+        console.error(err);
+        const logObject = {
+            error: err,
+            body: req.body,
             userId: req.userId
         };
         logger.error('Error while fetching customer transaction summary:', logObject);

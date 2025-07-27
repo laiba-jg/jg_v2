@@ -12,6 +12,92 @@ import { KYCStatus, PaymentGateway, PaymentMode, TransactionType } from "../util
 import Decimal from "decimal.js";
 import InvalidAmountError from "../errors/InvalidAmountError.js";
 import NotEnoughGoldError from "../errors/NotEnoughGoldError.js";
+import InvalidRedeemQuantityError from "../errors/InvalidRedeemQuantityError.js";
+import settings from "../config/defaults.js";
+
+export const buyTransaction = async (customerId, data) => {
+    const customer = await getCustomerById(customerId);
+    if (!customer) throw new CustomerNotFoundError();
+    if (!customer.kyc || !customer.kyc.kycStatus) throw new NoKYCError();
+    if (customer.kyc.kycStatus === KYCStatus.PENDING) throw new KYCPendingError();
+    if (customer.kyc.kycStatus === KYCStatus.REJECTED) throw new KYCRejectedError();
+
+    if (hasKYC(customer)) {
+        const { quantity, amount } = data;
+        if (quantity) return buyGoldByQuantity(customerId, data);
+        if (amount) return buyGoldByAmt(customerId, data);
+
+        throw new InvalidTransactionError('Invalid transaction data');
+    }
+
+    throw new NoKYCError('Customer does not have KYC approved');
+}
+
+export const sellTransaction = async (customerId, data) => {
+    const customer = await getCustomerById(customerId);
+    if (!customer) throw new CustomerNotFoundError();
+    if (!customer.kyc || !customer.kyc.kycStatus) throw new NoKYCError();
+    if (customer.kyc.kycStatus === KYCStatus.PENDING) throw new KYCPendingError();
+    if (customer.kyc.kycStatus === KYCStatus.REJECTED) throw new KYCRejectedError();
+
+    if (hasKYC(customer))
+        return sellGold(customerId, data);
+
+    throw new NoKYCError('Customer does not have KYC approved');
+};
+
+export const transactionSummaryByCustomerId = async (customerId) => getCustomerTransactionSummary(customerId);
+
+
+export const redeemTransaction = async (customerId, data) => {
+    const { quantity, address } = data;
+    if (!Number.isInteger(quantity)) throw new InvalidRedeemQuantityError();
+
+    const [transactionSummary] = await getCustomerTransactionSummary(customerId);
+    if (transactionSummary.availableToSell < quantity) throw new NotEnoughGoldError();
+
+    const transaction = {
+        transactionType: TransactionType.REDEEM,
+        customerId: customerId,
+        details: `Redeem ${quantity} grams of gold`,
+        quantity,
+        transferCharges: 0,
+        deliveryCharges: settings.deliveryCharge,
+        mintingCharges: settings.mintingCharge,
+        otherCharges: settings.otherCharges,
+        deliveryAddress: address,
+    };
+    return createTransaction(transaction);
+};
+
+async function sellGold(customerId, data) {
+    const { quantity } = data;
+    if (quantity <= 0) throw new InvalidQuantityError();
+    const latestGoldPrice = await getLatestGoldPrice();
+    if (!latestGoldPrice) throw new NoGoldPriceError();
+
+    const [transactionSummary] = await getCustomerTransactionSummary(customerId);
+    const { availableToSell } = transactionSummary;
+    if (availableToSell < quantity) throw new NotEnoughGoldError();
+
+    const retailPrice = new Decimal(latestGoldPrice.price24K);
+    const sellPrice = new Decimal(latestGoldPrice.price24K).mul(settings.sellPricePercentage).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    const totalAmount = sellPrice.mul(quantity).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    const transaction = {
+        transactionType: TransactionType.SELL,
+        customerId: customerId,
+        details: `Buy ${quantity} grams of gold`,
+        retailPrice,
+        sellPrice,
+        amount: totalAmount,
+        quantity,
+        paymentMode: PaymentMode.BANK_TRANSFER,
+        transferCharges: 0,
+        paymentGateway: PaymentGateway.MY_FATROOH,
+        paymentTransactionId: '',
+    };
+    return createTransaction(transaction);
+}
 
 const hasKYC = (customer) => {
     return customer.kyc.status === KYCStatus.APPROVED ||
@@ -101,65 +187,3 @@ const buyGoldByAmt = async (customerId, data) => {
     };
     return createTransaction(transaction);
 };
-
-export const buyTransaction = async (customerId, data) => {
-    const customer = await getCustomerById(customerId);
-    if (!customer) throw new CustomerNotFoundError();
-    if (!customer.kyc || !customer.kyc.kycStatus) throw new NoKYCError();
-    if (customer.kyc.kycStatus === KYCStatus.PENDING) throw new KYCPendingError();
-    if (customer.kyc.kycStatus === KYCStatus.REJECTED) throw new KYCRejectedError();
-
-    if (hasKYC(customer)) {
-        const { quantity, amount } = data;
-        if (quantity) return buyGoldByQuantity(customerId, data);
-        if (amount) return buyGoldByAmt(customerId, data);
-
-        throw new InvalidTransactionError('Invalid transaction data');
-    }
-
-    throw new NoKYCError('Customer does not have KYC approved');
-}
-
-export const sellTransaction = async (customerId, data) => {
-    const customer = await getCustomerById(customerId);
-    if (!customer) throw new CustomerNotFoundError();
-    if (!customer.kyc || !customer.kyc.kycStatus) throw new NoKYCError();
-    if (customer.kyc.kycStatus === KYCStatus.PENDING) throw new KYCPendingError();
-    if (customer.kyc.kycStatus === KYCStatus.REJECTED) throw new KYCRejectedError();
-
-    if (hasKYC(customer))
-        return sellGold(customerId, data);
-
-    throw new NoKYCError('Customer does not have KYC approved');
-};
-
-export const transactionSummaryByCustomerId = async (customerId) => getCustomerTransactionSummary(customerId);
-
-async function sellGold(customerId, data) {
-    const { quantity } = data;
-    if (quantity <= 0) throw new InvalidQuantityError();
-    const latestGoldPrice = await getLatestGoldPrice();
-    if (!latestGoldPrice) throw new NoGoldPriceError();
-
-    const [transactionSummary] = await getCustomerTransactionSummary(customerId);
-    const { availableToSell } = transactionSummary;
-    if (availableToSell < quantity) throw new NotEnoughGoldError();
-
-    const retailPrice = new Decimal(latestGoldPrice.price24K);
-    const sellPrice = new Decimal(latestGoldPrice.price24K).mul(0.96).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    const totalAmount = sellPrice.mul(quantity).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-    const transaction = {
-        transactionType: TransactionType.SELL,
-        customerId: customerId,
-        details: `Buy ${quantity} grams of gold`,
-        retailPrice,
-        sellPrice,
-        amount: totalAmount,
-        quantity,
-        paymentMode: PaymentMode.BANK_TRANSFER,
-        transferCharges: 0,
-        paymentGateway: PaymentGateway.MY_FATROOH,
-        paymentTransactionId: '',
-    };
-    return createTransaction(transaction);
-}

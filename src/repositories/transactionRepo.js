@@ -1,5 +1,7 @@
 import Transaction from '../models/TransactionModel.js';
+import settings from '../config/defaults.js';
 import mongoose from 'mongoose';
+
 
 export const getAllTransactions = (options) => {
     const { offset, limit, order, transactionType } = options;
@@ -35,7 +37,7 @@ export const getTransactionsByCustomerId = (customerId, options) => {
 
 export const getCustomerTransactionSummary = (customerId) => {
     // 72hrs
-    const cooldownCutoff = new Date(Date.now() - 1 * 60 * 60 * 1000);
+    const cooldownCutoff = new Date(Date.now() - settings.coolDownHours * 60 * 60 * 1000);
     const objectId = new mongoose.Types.ObjectId(customerId);
     const stages = [
         { $match: { customerId: objectId } },
