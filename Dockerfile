@@ -21,7 +21,7 @@ CMD ["npm", "run", "start:dev"]
 
 # Production stage
 FROM base AS production
-RUN npm ci
+RUN yarn install
 COPY . .
 EXPOSE 3000
 CMD ["npm", "start"]  
