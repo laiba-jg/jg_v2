@@ -1,4 +1,5 @@
-import { createProfile, updateProfile as updateCustomerProfile, updateKYCStatus } from '../services/customerSvc.js';
+import NoPhoneError from '../errors/NoPhoneError.js';
+import { createProfile, generateAndSentOTP, isOTPValid, updateProfile as updateCustomerProfile, updateKYCStatus } from '../services/customerSvc.js';
 import logger from '../util/logger.js';
 import { created, internalServerError, noContent, notFound, success } from '../util/response.js';
 
@@ -49,4 +50,47 @@ export const updateKyc = async (req, res) => {
         logger.error('Error updating kyc:', req.params.id, req.body, err);
         return internalServerError(res);
     }
+}
+
+export const sendOTP = async (req, res) => {
+    try {
+        generateAndSentOTP(req.body.phone);
+        return success(res, { message: 'OTP sent successfully', key: 'otpSent' });
+    } catch (err) {
+        const logObj = {
+            message: err.message,
+            phone: req.body.phone,
+            stack: err.stack
+        }
+        logger.error('Error sending OTP:', logObj);
+        handleError(err, res);
+    }
+}
+
+export const verifyOTP = async (req, res) => {
+    try {
+        if (isOTPValid(req.body.phone, req.body.otp)) {
+            // Generate a JWT token
+            return success(res, { message: 'OTP sent successfully', key: 'otpSent' });
+        }
+        return res.status(400).json({ message: 'Invalid OTP', key: 'invalidOTP' });
+    } catch (err) {
+        const logObj = {
+            message: err.message,
+            phone: req.body.phone,
+            stack: err.stack
+        }
+        logger.error('Error sending OTP:', logObj);
+        handleError(err, res);
+    }
+}
+
+const handleError = (err, res) => {
+    if (err instanceof NoPhoneError) {
+        return res.status(err.status).json({ message: err.message, key: 'noPhone' });
+    }
+    if (err instanceof SendOTPError) {
+        return res.status(500).json({ message: 'Failed to send OTP', key: 'otpSendFailed' });
+    }
+    return internalServerError(res);
 }

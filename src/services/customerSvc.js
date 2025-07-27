@@ -1,5 +1,7 @@
 import { create, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { UserType } from '../util/enums.js';
+import { sendSMS } from '../util/otp.js';
+import { deleteKey, getKey, setKey } from '../util/redis.js';
 
 export async function createProfile(data) {
     data.createdAt = new Date();
@@ -23,4 +25,26 @@ export const updateProfile = async (id, data) => {
 // Only allow authorised person to update KYC status
 export const updateKYCStatus = async (id, kyc) => {
     return updateCustomer(id, kyc);
+}
+
+export const generateAndSentOTP = async (phone) => {
+    if (!phone || !phone.countryCode || !phone.number)
+        throw new NoPhoneError()
+    const toPhone = phone.countryCode + phone.number;
+    const otp = generateOTP();
+    await setKey(`otp:${toPhone}`, otp, 300); // 5mns
+    await sendSMS(phone, otp);
+}
+
+export const isOTPValid = async (phone, userOTP) => {
+    if (!phone || !phone.countryCode || !phone.number)
+        throw new NoPhoneError()
+    const toPhone = phone.countryCode + phone.number;
+    const redisKey = `otp:${phone}`;
+    const storedOtp = await getKey(redisKey);
+    if (storedOtp === userOTP) {
+        await deleteKey(redisKey);
+        return true;
+    }
+    return false;
 }

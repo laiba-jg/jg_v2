@@ -20,6 +20,17 @@ const KycInfoSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 }, { _id: false });
 
+const AddressSchema = new mongoose.Schema({
+    addressLine1: { type: String, required: true },
+    addressLine2: { type: String },
+    city: { type: String, required: true },
+    state: { type: String, required: false },
+    postalCode: { type: String, required: false },
+    country: { type: String, required: true },
+    addressType: { type: String, enum: ['Home', 'Work', 'Other'], default: 'Home' },
+    isPrimary: { type: Boolean, default: false }
+}, { _id: false });
+
 const CustomerSchema = new mongoose.Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -37,6 +48,7 @@ const CustomerSchema = new mongoose.Schema({
     },
     userType: { type: String, enum: ['Consumer', 'Business'], required: true },
     kyc: KycInfoSchema,
+    addresses: { type: [AddressSchema], default: [] },
     createdAt: { type: Date },
     updatedAt: { type: Date, default: Date.now },
 });

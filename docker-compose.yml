@@ -9,7 +9,7 @@ services:
     container_name: justgold_api
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
+      - ./node_modules:/usr/src/app/node_modules
     working_dir: /usr/src/app
     ports:
       - "3000:3000"
@@ -17,7 +17,7 @@ services:
       - NODE_ENV=development
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - MONGO_URI=mongodb://localhost:27017/justgold-db
+      - MONGO_URI=mongodb://mongo:27017/justgold-db
     command: npm run dev
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/v1/health || curl -f https://apidev.gwarm.net/api/health || exit 1"]
@@ -26,16 +26,16 @@ services:
       retries: 3
       start_period: 10s
     depends_on:
-      # - mongo
+      - mongo
       - redis
 
-#   mongo:
-#     image: mongo:6
-#     container_name: justgold_mongo
-#     ports:
-#       - "27018:27017"
-#     volumes:
-#       - mongo_data:/data/db
+  mongo:
+    image: mongo:6
+    container_name: justgold_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
 
   redis:
     image: redis:7
@@ -43,5 +43,5 @@ services:
     ports:
       - "6379:6379"
 
-# volumes:
-#   mongo_data:
+volumes:
+  mongo_data:

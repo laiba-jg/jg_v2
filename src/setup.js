@@ -4,6 +4,7 @@ import express from 'express';
 import compression from 'compression';
 import mongoose from 'mongoose';
 
+import { connectToRedis } from './util/redis.js';
 import logger from './util/logger.js';
 import healthRoutes from './routes/healthRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
@@ -17,7 +18,9 @@ const setup = (app) => {
     app.use(compression());
 
     mongoose.connect(process.env.MONGO_URI);
+    connectToRedis();
     logger.info('Connected to MongoDB');
+
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
