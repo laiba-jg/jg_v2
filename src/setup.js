@@ -35,6 +35,7 @@ const setup = (app) => {
 
     // 404 handler
     app.use((req, res, next) => {
+        logger.info('request came', req.path);
         res.status(404).json({ message: 'Not found' });
     });
 
