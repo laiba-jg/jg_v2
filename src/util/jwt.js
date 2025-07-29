@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import settings from '../config/defaults';
+import settings from '../config/defaults.js';
 
 export const generateToken = (userId, role) => {
     const payload = {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { create, getProfile, updateProfile, updateKyc } from '../controllers/CustomerCtrl.js';
+import { create, getProfile, updateProfile, updateKyc } from '../controllers/customerCtrl.js';
 
 const router = express.Router();
 

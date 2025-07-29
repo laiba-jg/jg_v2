@@ -1,5 +1,5 @@
 # Base stage
-FROM node:20-alpine AS base
+FROM node:23-alpine AS base
 
 # Install dependencies (add curl for debugging)
 RUN apk add --no-cache python3 make g++ postgresql-client curl
@@ -7,7 +7,7 @@ RUN apk add --no-cache python3 make g++ postgresql-client curl
 WORKDIR /usr/src/app
 
 # Install dependencies first for better caching
-COPY package*.json ./
+COPY package.json ./
 COPY yarn.lock ./
 
 # Development stage
