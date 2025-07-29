@@ -24,9 +24,9 @@ jobs:
       DOCKER_IMAGE: justgold-api:latest
       DOCKER_REPOSITORY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/justgold-api
       DOCKER_TAG: latest
-      ECS_CLUSTER: justgold-${{ github.event.inputs.environment }}
-      ECS_SERVICE: justgold-api-service-${{ github.event.inputs.environment }}
-      TASK_DEFINITION_FILE: ecs-task-def-${{ github.event.inputs.environment }}.json
+      ECS_CLUSTER: ecs-cluster-${{ github.event.inputs.environment }}
+      ECS_SERVICE: app-service-${{ github.event.inputs.environment }}
+      TASK_DEFINITION: justgold-api
 
     steps:
       - name: Checkout code
@@ -64,4 +64,5 @@ jobs:
         with:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
+          task-definition: ${{ env.TASK_DEFINITION }}
           wait-for-service-stability: false
