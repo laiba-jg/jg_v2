@@ -14,17 +14,16 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+      - MONGO_URI=${MONGO_URI}
+      - TWILIO_SID=${TWILIO_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE=${TWILIO_PHONE}
       - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - MONGO_URI=mongodb://mongo:27017/justgold-db
+      - REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET=${JWT_SECRET}
     command: npm run dev
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/v1/health || curl -f https://apidev.gwarm.net/api/health || exit 1"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
     depends_on:
       - mongo
       - redis

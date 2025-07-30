@@ -15,15 +15,11 @@ export function generateOTP() {
 }
 
 export async function sendSMS(phone, otp) {
-    const message = `Your OTP code is ${otp}`;
-    try {
-        await client.messages.create({
-            body: message,
-            from: twilioPhone,
-            to: phone.countryCode + phone.number
-        });
-    } catch (err) {
-        logger.error('Error sending OTP:', err.message);
-        throw new SendOTPError();
-    }
+    const message = `Your OTP code is ${otp}, Do not share this with anyone.
+     Just gold or its representatives will never ask you for OTP.`;
+    await client.messages.create({
+        body: message,
+        from: twilioPhone,
+        to: phone.countryCode + phone.number
+    });
 }

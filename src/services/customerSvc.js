@@ -1,6 +1,6 @@
 import { create, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { UserType } from '../util/enums.js';
-import { sendSMS } from '../util/otp.js';
+import { generateOTP, sendSMS } from '../util/otp.js';
 import { deleteKey, getKey, setKey } from '../util/redis.js';
 
 export async function createProfile(data) {
@@ -27,7 +27,7 @@ export const updateKYCStatus = async (id, kyc) => {
     return updateCustomer(id, kyc);
 }
 
-export const generateAndSentOTP = async (phone) => {
+export const generateAndSendOTP = async (phone) => {
     if (!phone || !phone.countryCode || !phone.number)
         throw new NoPhoneError()
     const toPhone = phone.countryCode + phone.number;

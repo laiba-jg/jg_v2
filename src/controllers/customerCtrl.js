@@ -1,6 +1,6 @@
 import Roles from '../auth/roles.js';
 import NoPhoneError from '../errors/NoPhoneError.js';
-import { createProfile, generateAndSentOTP, isOTPValid, updateProfile as updateCustomerProfile, updateKYCStatus } from '../services/customerSvc.js';
+import { createProfile, generateAndSendOTP, isOTPValid, updateProfile as updateCustomerProfile, updateKYCStatus } from '../services/customerSvc.js';
 import { generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
 import { created, internalServerError, noContent, notFound, success } from '../util/response.js';
@@ -56,9 +56,10 @@ export const updateKyc = async (req, res) => {
 
 export const sendOTP = async (req, res) => {
     try {
-        generateAndSentOTP(req.body.phone);
+        await generateAndSendOTP(req.body.phone);
         return success(res, { message: 'OTP sent successfully', key: 'otpSent' });
     } catch (err) {
+        console.error(err);
         const logObj = {
             message: err.message,
             phone: req.body.phone,
