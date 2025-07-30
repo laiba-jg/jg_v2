@@ -71,7 +71,8 @@ jobs:
         run: |
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
-            --service $ECS_SERVICE 
+            --service $ECS_SERVICE \
+            --force-new-deployment
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           ECS_CLUSTER: ${{ env.ECS_CLUSTER }}
