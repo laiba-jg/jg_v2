@@ -1,6 +1,6 @@
 import { forbidden } from "../util/response.js";
 
-export default function authorize(action, resource, checkOwner = false) {
+export function authorize(action, resource, checkOwner = false) {
     return (req, res, next) => {
         const role = req.user?.role;
         const userId = req.user?.id;
@@ -16,4 +16,17 @@ export default function authorize(action, resource, checkOwner = false) {
 
         next();
     };
+}
+
+export function authorizeCreateProfile(req, res, next) {
+    const otpCountryCode = req.user?.countryCode;
+    const otpPhoneNumber = req.user?.number;
+    const profilePhone = req.body.phone;
+    if (!otpPhoneNumber
+        || !profilePhone
+        || otpPhone.countryCode !== otpCountryCode
+        || otpPhone.number !== otpPhoneNumber)
+        return forbidden(res);
+
+    next();
 }
