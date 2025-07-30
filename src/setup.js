@@ -9,7 +9,7 @@ import logger from './util/logger.js';
 import healthRoutes from './routes/healthRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
-import { authenticate } from './middlewares/auth.js';
+import authenticate from './auth/authenticate.js';
 
 const setup = (app) => {
     app.use(helmet());
@@ -30,7 +30,7 @@ const setup = (app) => {
     // routes
     app.use('/api/v1', healthRoutes);
 
-    app.use('/api/v1/customers', customerRoutes);
+    app.use('/api/v1/customers', authenticate, customerRoutes);
     app.use('/api/v1/transactions', authenticate, transactionRoutes);
 
     // 404 handler

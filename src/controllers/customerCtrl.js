@@ -1,14 +1,18 @@
 import Roles from '../auth/roles.js';
 import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
+import ProfileSchema from '../schema/ProfileSchema.js';
 import { createProfile, generateAndSendOTP, isOTPValid, updateProfile as updateCustomerProfile, updateKYCStatus } from '../services/customerSvc.js';
 import { generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
-import { created, internalServerError, noContent, notFound, success } from '../util/response.js';
+import { badRequest, created, internalServerError, noContent, notFound, success } from '../util/response.js';
 
 export const create = async (req, res) => {
     try {
         const data = req.body;
+        const validationResult = ProfileSchema.validate(data);
+        if (validationResult.error) return badRequest(res, validationResult.error.details);
+
         await createProfile(data);
         return created(res);
     } catch (err) {
