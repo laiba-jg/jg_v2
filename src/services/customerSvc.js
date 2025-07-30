@@ -29,7 +29,7 @@ export const updateKYCStatus = async (id, kyc) => {
 
 export const generateAndSendOTP = async (phone) => {
     if (!phone || !phone.countryCode || !phone.number)
-        throw new NoPhoneError()
+        throw new NoPhoneError();
     const toPhone = phone.countryCode + phone.number;
     const otp = generateOTP();
     await setKey(`otp:${toPhone}`, otp, 300); // 5mns
@@ -40,8 +40,9 @@ export const isOTPValid = async (phone, userOTP) => {
     if (!phone || !phone.countryCode || !phone.number)
         throw new NoPhoneError()
     const toPhone = phone.countryCode + phone.number;
-    const redisKey = `otp:${phone}`;
+    const redisKey = `otp:${toPhone}`;
     const storedOtp = await getKey(redisKey);
+    console.log('stored otp', storedOtp, userOTP);
     if (storedOtp === userOTP) {
         await deleteKey(redisKey);
         return true;

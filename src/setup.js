@@ -30,7 +30,7 @@ const setup = (app) => {
     // routes
     app.use('/api/v1', healthRoutes);
 
-    app.use('/api/v1/profiles', customerRoutes);
+    app.use('/api/v1/customers', customerRoutes);
     app.use('/api/v1/transactions', authenticate, transactionRoutes);
 
     // 404 handler

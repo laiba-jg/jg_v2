@@ -1,4 +1,4 @@
-export const success = (res, data) => res.status(200).json(data);
+export const success = (res, data) => res.status(200).json(data || {});
 
 export const created = (res) => res.status(201).json({ message: 'Created', key: '201' });
 

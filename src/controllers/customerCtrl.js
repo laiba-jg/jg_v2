@@ -1,5 +1,6 @@
 import Roles from '../auth/roles.js';
 import NoPhoneError from '../errors/NoPhoneError.js';
+import SendOTPError from '../errors/SendOTPError.js';
 import { createProfile, generateAndSendOTP, isOTPValid, updateProfile as updateCustomerProfile, updateKYCStatus } from '../services/customerSvc.js';
 import { generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
@@ -25,7 +26,7 @@ export const getProfile = async (req, res) => {
         const id = req.params.id;
         const profile = await getProfileById(id);
         if (!profile) return notFound(res);
-        return success(profile);
+        return success(res);
     } catch (err) {
         logger.error('Error fetching profile:', req.params.id, err);
         return internalServerError(res);
@@ -72,8 +73,9 @@ export const sendOTP = async (req, res) => {
 
 export const verifyOTP = async (req, res) => {
     try {
-        if (isOTPValid(req.body.phone, req.body.otp)) {
-            const token = generateToken(req.body.userId, Roles.CUSTOMER);
+        const { phone, otp } = req.body;
+        if (await isOTPValid(phone, otp)) {
+            const token = generateToken(req.body.phone, Roles.CUSTOMER);
             return success(res, { token });
         }
         return res.status(400).json({ message: 'Invalid OTP', key: 'invalidOTP' });
@@ -81,10 +83,9 @@ export const verifyOTP = async (req, res) => {
         const logObj = {
             message: err.message,
             phone: req.body.phone,
-            stack: err.stack
         }
-        logger.error('Error sending OTP:', logObj);
-        handleError(err, res);
+        logger.error('Error verifying OTP:', logObj);
+        return handleError(err, res);
     }
 }
 

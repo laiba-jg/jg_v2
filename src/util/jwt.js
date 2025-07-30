@@ -8,7 +8,7 @@ export const generateToken = (userId, role) => {
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: settings.expiresIn
+        expiresIn: settings.tokenExpiry
     });
 
     return token;
