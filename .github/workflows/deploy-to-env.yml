@@ -71,8 +71,7 @@ jobs:
         run: |
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
-            --service $ECS_SERVICE \
-            --no-wait
+            --service $ECS_SERVICE 
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           ECS_CLUSTER: ${{ env.ECS_CLUSTER }}
