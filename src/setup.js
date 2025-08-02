@@ -33,10 +33,10 @@ const setup = (app) => {
     });
 
     // routes
-    app.use('/api/v1', healthRoutes);
+    app.use('/v1', healthRoutes);
 
-    app.use('/api/v1/customers', customerRoutes);
-    app.use('/api/v1/transactions', authenticate, transactionRoutes);
+    app.use('/v1/customers', customerRoutes);
+    app.use('/v1/transactions', authenticate, transactionRoutes);
 
     // 404 handler
     app.use((req, res, next) => {
