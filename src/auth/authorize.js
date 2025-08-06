@@ -19,13 +19,15 @@ export function authorize(action, resource, checkOwner = false) {
 }
 
 export function authorizeCreateProfile(req, res, next) {
-    const otpCountryCode = req.user?.countryCode;
-    const otpPhoneNumber = req.user?.number;
-    const profilePhone = req.body.phone;
+    const otpCountryCode = req.user?.phone?.countryCode;
+    const otpPhoneNumber = req.user?.phone?.number;
+    const profileCountryCode = req.body.countryCode;
+    const profilePhoneNumber = req.body.number;
+
     if (!otpPhoneNumber
-        || !profilePhone
-        || otpPhone.countryCode !== otpCountryCode
-        || otpPhone.number !== otpPhoneNumber)
+        || !profilePhoneNumber
+        || otpCountryCode !== profileCountryCode
+        || otpPhoneNumber !== profilePhoneNumber)
         return forbidden(res);
 
     next();

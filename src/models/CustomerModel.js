@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { type } from 'os';
 
 const KycInfoSchema = new mongoose.Schema({
     kycId: { type: String, required: true, unique: true },
@@ -39,10 +40,11 @@ const CustomerSchema = new mongoose.Schema({
     emailVerified: { type: Boolean, required: false, default: false },
     country: { type: String, required: true },
     isMpinSet: { type: Boolean, required: false, default: false },
-    mpin: { type: Number },
+    mpin: { type: String },
     locked: { type: Boolean, default: false },
     lockedReason: { type: String, default: '' },
     wrongMpinCount: { type: Number, default: 0 },
+    dob: { type: Date, required: false },
     phone: {
         countryCode: { type: String, required: true },
         number: { type: String, required: true }

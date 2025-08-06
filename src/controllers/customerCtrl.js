@@ -1,26 +1,34 @@
 import Roles from '../auth/roles.js';
+import AccountLockedError from '../errors/AccountLockedError.js';
+import CustomerNotFoundError from '../errors/CustomerNotFound.js';
+import InvalidMpinError from '../errors/InvalidMpinError.js';
+import MpinNotSetError from '../errors/MpinNotSetError.js';
 import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
+import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
-import { createProfile, generateAndSendOTP, isOTPValid, updateProfile as updateCustomerProfile, updateKYCStatus } from '../services/customerSvc.js';
-import { generateToken } from '../util/jwt.js';
+import { createProfile, generateAndSendOTP, isOTPValid, setMpin, updateProfile as updateCustomerProfile, updateKYCStatus, validateMpin } from '../services/customerSvc.js';
+import { generateTempToken, generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
 import { badRequest, created, internalServerError, noContent, notFound, success } from '../util/response.js';
 
 export const create = async (req, res) => {
     try {
         const data = req.body;
+        console.log('Creating profile with data:', data);
         const validationResult = ProfileSchema.validate(data);
-        if (validationResult.error) return badRequest(res, validationResult.error.details);
+        console.log(validationResult, "validation result");
+        if (validationResult.error) return badRequest(res, { message: validationResult.error.details, key: '400' });
 
         await createProfile(data);
         return created(res);
     } catch (err) {
+        console.error('Error creating profile:', err);
+        logger.error('Error creating profile:', err);
         if (err.code === 11000) {
             logger.warn('Duplicate email error:', req.body, err);
-            return res.status(409).json({ message: 'Email already exists', key: 'duplicateEmail' });
+            return res.status(409).json({ message: 'Account already exists', key: 'duplicateAccount' });
         }
-        logger.error('Error creating profile:', req.body, err);
         return internalServerError(res);
     }
 };
@@ -78,8 +86,9 @@ export const sendOTP = async (req, res) => {
 export const verifyOTP = async (req, res) => {
     try {
         const { phone, otp } = req.body;
-        if (await isOTPValid(phone, otp)) {
-            const token = generateToken(req.body.phone, Roles.CUSTOMER);
+        const isValid = await isOTPValid(phone, otp);
+        if (isValid) {
+            const token = await generateTempToken({ phone: req.body.phone, role: Roles.CUSTOMER });
             return success(res, { token });
         }
         return res.status(400).json({ message: 'Invalid OTP', key: 'invalidOTP' });
@@ -93,12 +102,53 @@ export const verifyOTP = async (req, res) => {
     }
 }
 
+export const createMpin = async (req, res) => {
+    try {
+        const id = req.user.id;
+        const { mpin } = req.body;
+        await setMpin(id, mpin);
+        return noContent(res);
+    } catch (err) {
+        logger.error('Error setting MPIN:', err, req.params.id, req.body);
+        return handleError(err, res);
+    }
+}
+
+export const verifyMpin = async (req, res) => {
+    try {
+        const id = req.user.id;
+        const { mpin } = req.body;
+        await validateMpin(id, mpin);
+        const token = generateToken({ id: req.user.id, role: req.user.role });
+        return success(res, { token });
+    } catch (err) {
+        logger.error('Error setting MPIN:', err, req.params.id, req.body);
+        return handleError(err, res);
+    }
+}
+
 const handleError = (err, res) => {
+    if (err instanceof InvalidMpinError) {
+        return res.status(err.status).json({ message: err.message, key: 'invalidMpin' });
+    }
+    if (err instanceof CustomerNotFoundError) {
+        return res.status(err.status).json({ message: err.message, key: 'customerNotFound' });
+    }
     if (err instanceof NoPhoneError) {
         return res.status(err.status).json({ message: err.message, key: 'noPhone' });
     }
     if (err instanceof SendOTPError) {
         return res.status(500).json({ message: 'Failed to send OTP', key: 'otpSendFailed' });
     }
+    if (err instanceof AccountLockedError) {
+        return res.status(401).json({ message: 'Too many wrong Mpin attempts', key: 'tooManyAttempts' });
+    }
+    if (err instanceof WrongMpinError) {
+        return res.status(401).json({ message: 'Wrong MPIN', key: 'wrongMpin' });
+    }
+    if (err instanceof MpinNotSetError) {
+        return res.status(401).json({ message: 'No MPIN', key: 'mPinNotSet' });
+    }
+
     return internalServerError(res);
 }

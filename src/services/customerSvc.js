@@ -1,4 +1,10 @@
+import AccountLockedError from '../errors/AccountLockedError.js';
+import CustomerNotFoundError from '../errors/CustomerNotFound.js';
+import InvalidMpinError from '../errors/InvalidMpinError.js';
+import MpinNotSetError from '../errors/MpinNotSetError.js';
+import WrongMpinError from '../errors/WrongMpinError.js';
 import { create, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
+import { comparePassword, hashPassword } from '../util/crypto.js';
 import { UserType } from '../util/enums.js';
 import { generateOTP, sendSMS } from '../util/otp.js';
 import { deleteKey, getKey, setKey } from '../util/redis.js';
@@ -48,4 +54,36 @@ export const isOTPValid = async (phone, userOTP) => {
         return true;
     }
     return false;
+}
+
+export const setMpin = async (id, mpin) => {
+    if (!mpin || mpin.length !== 4) throw new InvalidMpinError();
+    const customer = await getCustomerById(id);
+    if (!customer) throw new CustomerNotFoundError();
+    const hashedMpin = await hashPassword(mpin);
+    customer.mpin = hashedMpin;
+    customer.isMpinSet = true;
+    customer.wrongMpinCount = 0;
+    return updateCustomer(id, customer);
+}
+
+export const validateMpin = async (id, mpin) => {
+    const customer = await getCustomerById(id);
+    if (!customer) throw new CustomerNotFoundError();
+    if (!customer.isMpinSet) throw new MpinNotSetError();
+    if (customer.locked) throw new AccountLockedError();
+
+    const isValid = await comparePassword(mpin, customer.mpin);
+    if (!isValid) {
+        customer.wrongMpinCount += 1;
+        if (customer.wrongMpinCount >= 5) {
+            customer.locked = true;
+            customer.lockedReason = 'Too many wrong MPIN attempts';
+        }
+        await updateCustomer(id, customer);
+        throw new WrongMpinError();
+    }
+    customer.wrongMpinCount = 0;
+    await updateCustomer(id, customer);
+    return true;
 }

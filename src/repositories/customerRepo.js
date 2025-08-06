@@ -9,8 +9,7 @@ export function getCustomerById(id) {
     return CustomerModel.findById(id);
 }
 
-export function updateCustomer(id, kyc) {
-    return CustomerModel.findByIdAndUpdate(id, {
-        $set: { kyc, updatedAt: new Date() }
-    }, { new: true, upsert: true });
+export function updateCustomer(id, data) {
+    return CustomerModel.findByIdAndUpdate(id, data, { new: true, upsert: false });
 }
+
