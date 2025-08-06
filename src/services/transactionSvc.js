@@ -155,11 +155,7 @@ const buyGoldByQuantity = async (customerId, data) => {
 
 const buyGoldByAmt = async (customerId, data) => {
     const { amount, paymentMode, paymentGateway, paymentTransactionId } = data;
-
-    console.log({ data });
-
     if (amount < 10) throw new InvalidAmountError();
-
 
     const amountAavilableAfterTransferCharges = new Decimal(amount).sub(getTransferCharges(paymentMode, amount));
     if (amountAavilableAfterTransferCharges.value <= 0) throw new InvalidAmountError();

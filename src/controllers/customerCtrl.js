@@ -15,15 +15,13 @@ import { badRequest, created, internalServerError, noContent, notFound, success 
 export const create = async (req, res) => {
     try {
         const data = req.body;
-        console.log('Creating profile with data:', data);
         const validationResult = ProfileSchema.validate(data);
-        console.log(validationResult, "validation result");
         if (validationResult.error) return badRequest(res, { message: validationResult.error.details, key: '400' });
 
-        await createProfile(data);
-        return created(res);
+        const profile = await createProfile(data);
+        const token = await generateToken({ id: profile._id, role: Roles.CUSTOMER });
+        return created(res, { token, key: '201' });
     } catch (err) {
-        console.error('Error creating profile:', err);
         logger.error('Error creating profile:', err);
         if (err.code === 11000) {
             logger.warn('Duplicate email error:', req.body, err);

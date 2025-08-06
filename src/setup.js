@@ -27,11 +27,6 @@ const setup = (app) => {
         logger.info(`Server running on port ${PORT}`);
     });
 
-    app.use((req, res, next) => {
-        console.log(`trying to debug ${req.method} ${req.path}`);
-        next();
-    });
-
     // routes
     app.use('/v1', healthRoutes);
 

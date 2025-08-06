@@ -1,6 +1,6 @@
 export const success = (res, data) => res.status(200).json(data || {});
 
-export const created = (res) => res.status(201).json({ message: 'Created', key: '201' });
+export const created = (res, data = null) => res.status(201).json(data || { message: 'Created', key: '201' });
 
 export const notFound = (res) => res.status(404).json({ message: 'Not Found', key: '404' });
 

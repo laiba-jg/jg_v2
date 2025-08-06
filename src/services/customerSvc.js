@@ -48,7 +48,6 @@ export const isOTPValid = async (phone, userOTP) => {
     const toPhone = phone.countryCode + phone.number;
     const redisKey = `otp:${toPhone}`;
     const storedOtp = await getKey(redisKey);
-    console.log('stored otp', storedOtp, userOTP);
     if (storedOtp === userOTP) {
         await deleteKey(redisKey);
         return true;

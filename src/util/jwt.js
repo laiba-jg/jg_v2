@@ -8,15 +8,8 @@ export const generateTempToken = async (payload) => {
     });
 };
 
-export const generateToken = (userId, role) => {
-    const payload = {
-        id: userId,
-        role
-    };
-
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+export const generateToken = (payload) => {
+    return jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: settings.tokenExpiry
     });
-
-    return token;
 };
