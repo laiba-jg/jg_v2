@@ -117,10 +117,10 @@ export const verifyMpin = async (req, res) => {
         const id = req.user.id;
         const { mpin } = req.body;
         await validateMpin(id, mpin);
-        const token = generateToken({ id: req.user.id, role: req.user.role });
+        const token = await generateToken({ id: req.user.id, role: req.user.role });
         return success(res, { token });
     } catch (err) {
-        logger.error('Error setting MPIN:', err, req.params.id, req.body);
+        logger.error('Error verifying MPIN:', err, req.params.id, req.body);
         return handleError(err, res);
     }
 }
