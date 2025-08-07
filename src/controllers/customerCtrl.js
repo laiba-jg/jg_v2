@@ -8,6 +8,7 @@ import SendOTPError from '../errors/SendOTPError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
 import { createProfile, generateAndSendOTP, isOTPValid, setMpin, updateProfile as updateCustomerProfile, updateKYCStatus, validateMpin } from '../services/customerSvc.js';
+import { AuthTokenType } from '../util/enums.js';
 import { generateTempToken, generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
 import { badRequest, created, internalServerError, noContent, notFound, success } from '../util/response.js';
@@ -19,7 +20,7 @@ export const create = async (req, res) => {
         if (validationResult.error) return badRequest(res, { message: validationResult.error.details, key: '400' });
 
         const profile = await createProfile(data);
-        const token = await generateToken({ id: profile._id, role: Roles.CUSTOMER });
+        const token = await generateToken({ tokenType: AuthTokenType.CUSTOMER, id: profile._id, role: Roles.CUSTOMER });
         return created(res, { token, key: '201' });
     } catch (err) {
         logger.error('Error creating profile:', err);
@@ -86,7 +87,7 @@ export const verifyOTP = async (req, res) => {
         const { phone, otp } = req.body;
         const isValid = await isOTPValid(phone, otp);
         if (isValid) {
-            const token = await generateTempToken({ phone: req.body.phone, role: Roles.CUSTOMER });
+            const token = await generateTempToken({ tokenType: AuthTokenType.TEMPORARY, phone: req.body.phone, role: Roles.CUSTOMER });
             return success(res, { token });
         }
         return res.status(400).json({ message: 'Invalid OTP', key: 'invalidOTP' });
@@ -117,7 +118,7 @@ export const verifyMpin = async (req, res) => {
         const id = req.user.id;
         const { mpin } = req.body;
         await validateMpin(id, mpin);
-        const token = await generateToken({ id: req.user.id, role: req.user.role });
+        const token = await generateToken({ tokenType: AuthTokenType.CUSTOMER, id: req.user.id, role: req.user.role });
         return success(res, { token });
     } catch (err) {
         logger.error('Error verifying MPIN:', err, req.params.id, req.body);

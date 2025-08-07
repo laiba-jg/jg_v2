@@ -36,3 +36,8 @@ export const PaymentGateway = {
     MY_FATOORAH: "MyFatoorah",
     LEAN_TECH: "LeanTech",
 };
+
+export const AuthTokenType = {
+    CUSTOMER: "Customer",
+    TEMPORARY: "Temp",
+};
