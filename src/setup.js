@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import express from 'express';
 import compression from 'compression';
 import mongoose from 'mongoose';
+import swaggerUi from "swagger-ui-express";
 
 import { connectToRedis } from './util/redis.js';
 import logger from './util/logger.js';
@@ -10,12 +11,23 @@ import healthRoutes from './routes/healthRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import authenticate from './auth/authenticate.js';
+import YAML from "yamljs";
+import path from 'path';
+import { fileURLToPath } from "url";
+
+// Recreate __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const setup = (app) => {
+    const swaggerSpecs = YAML.load(path.join(__dirname, '..', "docs/v1/openapi.yml"));
+
     app.use(helmet());
     app.use(express.json({ limit: '10kb' }));
     app.use(morgan('combined'));
     app.use(compression());
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+
 
     mongoose.connect(process.env.MONGO_URI);
     connectToRedis();

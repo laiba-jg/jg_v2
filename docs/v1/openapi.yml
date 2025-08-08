@@ -1,0 +1,144 @@
+openapi: 3.1.0
+info:
+  title: Justgold API
+  version: 1.0.0
+  description: API Documentation for JustGold API
+servers:
+  - url: http://localhost:3000
+    description: Local
+  - url: https://api.justgold.me
+    description: Development
+
+paths:
+  /v1/health:
+    get:
+      summary: Returns health status
+      tags:
+        - health
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Hello World
+
+  v1/customers/otp/send:
+    post:
+      summary: Send OTP for customer onboarding
+      tags:
+        - Customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+              properties:
+                phone:
+                  type: object
+                  properties:
+                    countryCode:
+                      type: string
+                      example: '+971'
+                    number:
+                      type: string
+                      example: 1234567890
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+                  key:
+                    type: string
+                    example: 200
+
+  v1/customers/otp/verify:
+    post:
+      summary: Verify customer OTP
+      tags:
+        - Customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              properties:
+                otp:
+                  type: number
+                  example: 1234
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: jwt-token
+                  key:
+                    type: string
+                    example: 200
+
+  v1/customers:
+    post:
+      summary: Create customer profile
+      tags:
+        - Customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              properties:
+                firstName:
+                  type: string
+                  example: John
+                lastName:
+                  type: string
+                  example: Doe
+                country:
+                  type: string
+                  example: UAE
+                phone:
+                  type: object
+                  required:
+                  properties:
+                    countryCode:
+                      type: string
+                      example: '+971'
+                    number:
+                      type: string
+                      example: 1234567890
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: jwt-token
+                  key:
+                    type: string
+                    example: 201
