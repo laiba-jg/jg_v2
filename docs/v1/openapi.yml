@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:3000
     description: Local
-  - url: https://api.justgold.me
+  - url: https://api.dev.justgold.me
     description: Development
 
 paths:
@@ -46,7 +46,7 @@ paths:
                   properties:
                     countryCode:
                       type: string
-                      example: '+971'
+                      example: "+971"
                     number:
                       type: string
                       example: 1234567890
@@ -124,7 +124,7 @@ paths:
                   properties:
                     countryCode:
                       type: string
-                      example: '+971'
+                      example: "+971"
                     number:
                       type: string
                       example: 1234567890
@@ -142,3 +142,58 @@ paths:
                   key:
                     type: string
                     example: 201
+
+  v1/customers/mpin:
+    post:
+      summary: Customer mPin setup
+      tags:
+        - Customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              properties:
+                mpin:
+                  type: number
+                  example: 1234
+      responses:
+        "204":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+
+  v1/customers/mpin/verify:
+    post:
+      summary: Customer mPin verification/login
+      tags:
+        - Customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              properties:
+                mpin:
+                  type: number
+                  example: 1234
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Success
+                  key:
+                    type: string
+                    example: 200

@@ -26,7 +26,7 @@ const setup = (app) => {
     app.use(express.json({ limit: '10kb' }));
     app.use(morgan('combined'));
     app.use(compression());
-    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+    app.use("/v1/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 
     mongoose.connect(process.env.MONGO_URI);
