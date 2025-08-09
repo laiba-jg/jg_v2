@@ -59,14 +59,6 @@ jobs:
         run: |
           docker push ${{ env.DOCKER_REPOSITORY }}:${{ env.DOCKER_TAG }}
 
-      # - name: Deploy to ECS
-      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      #   with:
-      #     service: ${{ env.ECS_SERVICE }}
-      #     cluster: ${{ env.ECS_CLUSTER }}
-      #     task-definition: ${{ env.TASK_DEFINITION }}
-      #     wait-for-service-stability: false
-
       - name: Deploy to ECS
         run: |
           aws ecs update-service \

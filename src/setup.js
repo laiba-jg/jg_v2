@@ -9,11 +9,14 @@ import { connectToRedis } from './util/redis.js';
 import logger from './util/logger.js';
 import healthRoutes from './routes/healthRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import authenticate from './auth/authenticate.js';
 import YAML from "yamljs";
 import path from 'path';
 import { fileURLToPath } from "url";
+import cors from 'cors';
+
 
 // Recreate __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +29,7 @@ const setup = (app) => {
     app.use(express.json({ limit: '10kb' }));
     app.use(morgan('combined'));
     app.use(compression());
+    app.use(cors());
     app.use("/v1/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 
@@ -45,6 +49,8 @@ const setup = (app) => {
     app.use('/v1/customers', customerRoutes);
     app.use('/v1/transactions', authenticate, transactionRoutes);
 
+
+    app.use('/v1/users', userRoutes);
     // 404 handler
     app.use((req, res, next) => {
         logger.info('request came', req.path);

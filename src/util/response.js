@@ -13,3 +13,5 @@ export const badRequest = (res, message) => res.status(400).json(message);
 export const forbidden = (res) => res.status(403).json({ message: 'No permission to access this resource', key: '403' });
 
 export const unauthorised = (res) => res.status(401).json({ message: 'Unauthorized', key: '401' });
+
+export const conflict = (res) => res.status(409).json({ message: 'Record already exists', key: '409' });

@@ -40,4 +40,6 @@ export const PaymentGateway = {
 export const AuthTokenType = {
     CUSTOMER: "Customer",
     TEMPORARY: "Temp",
+    USER: "User",
+    SERVICE: "Service"
 };
