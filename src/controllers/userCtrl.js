@@ -3,8 +3,7 @@ import UserSchema from '../schema/UserSchema.js';
 import userService from '../services/userService.js';
 import logger from '../util/logger.js';
 import { badRequest, conflict, created, internalServerError, noContent, notFound, success } from '../util/response.js';
-import { generateToken } from '../util/jwt.js';
-import { AuthTokenType } from '../util/enums.js';
+import WrongCredentials from '../errors/WrongCredentials.js';
 
 const createUser = async (req, res) => {
     try {
@@ -74,9 +73,16 @@ const loginUser = async (req, res) => {
         return success(res, { token });
     } catch (err) {
         logger.error(err);
-        internalServerError(res);
+        handleError(err, res);
     }
 };
+
+const handleError = (err, res) => {
+    if (err instanceof WrongCredentials) {
+        return res.status(err.status).json({ message: err.message, key: 'wrongCredentials' });
+    }
+    return internalServerError(res);
+}
 
 export default {
     getAllUsers,
