@@ -4,3 +4,5 @@ const Actions = {
     CREATE: "create",
     DELETE: "delete"
 };
+
+export default Actions;

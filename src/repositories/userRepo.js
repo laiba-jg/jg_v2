@@ -8,7 +8,9 @@ const UserRepo = {
     },
 
     update(id, updateData) {
-        return User.findByIdAndUpdate(id, updateData);
+        if (!updateData.password) delete updateData.password;
+
+        return User.findByIdAndUpdate(id, { $set: updateData });
     },
 
     deactivate(id) {

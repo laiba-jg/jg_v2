@@ -1,4 +1,7 @@
 import { forbidden } from "../util/response.js";
+import Roles from "./roles.js";
+import ac from './permissions.js';
+
 
 export function authorize(action, resource, checkOwner = false) {
     return (req, res, next) => {
@@ -31,4 +34,15 @@ export function authorizeCreateProfile(req, res, next) {
         return forbidden(res);
 
     next();
+}
+
+export function authorizeCreateUpdateUser(req, res, next) {
+    const userRole = req.user?.role;
+    const userId = req.user?.id;
+    const createRole = req.body.role;
+
+    if (userRole === Roles.USER) return forbidden(res);
+    if (userRole === Roles.ADMIN && createRole === Roles.SUPER_ADMIN) return forbidden(res);
+    if (userRole === Roles.SUPER_ADMIN) return next();
+    return next();
 }

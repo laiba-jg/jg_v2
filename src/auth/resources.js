@@ -1,7 +1,8 @@
 const Resources = {
     PROFILE: "Profile",
     TRANSACTION: "Transaction",
-    KYC: "KYC"
+    KYC: "KYC",
+    USER: "User",
 };
 
 export default Resources;

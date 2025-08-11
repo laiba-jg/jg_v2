@@ -4,6 +4,7 @@ import userService from '../services/userService.js';
 import logger from '../util/logger.js';
 import { badRequest, conflict, created, internalServerError, noContent, notFound, success } from '../util/response.js';
 import WrongCredentials from '../errors/WrongCredentials.js';
+import UserInactiveError from '../errors/UserInactiveError.js';
 
 const createUser = async (req, res) => {
     try {
@@ -28,12 +29,14 @@ const updateUser = async (req, res) => {
         await userService.updateUser(req.params.id, req.body);
         noContent(res);
     } catch (err) {
+        logger.error(err);
         internalServerError(res);
     }
 };
 
 const getAllUsers = async (req, res) => {
     try {
+        console.log('get all users request');
         const users = await userService.getAllUsers();
         success(res, users);
     } catch (err) {
@@ -78,6 +81,9 @@ const loginUser = async (req, res) => {
 };
 
 const handleError = (err, res) => {
+    if (err instanceof UserInactiveError) {
+        return res.status(err.status).json({ message: err.message, key: 'inactiveUser' });
+    }
     if (err instanceof WrongCredentials) {
         return res.status(err.status).json({ message: err.message, key: 'wrongCredentials' });
     }

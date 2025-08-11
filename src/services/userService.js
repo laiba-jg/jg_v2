@@ -1,3 +1,4 @@
+import UserInactiveError from '../errors/UserInactiveError.js';
 import WrongCredentials from '../errors/WrongCredentials.js';
 import userRepo from '../repositories/userRepo.js';
 import { comparePassword, hashPassword } from '../util/crypto.js';
@@ -9,7 +10,8 @@ async function createUser(userData) {
     return userRepo.create(userData);
 }
 
-function updateUser(id, updateData) {
+async function updateUser(id, updateData) {
+    if (updateData.password) updateData.password = await hashPassword(updateData.password);
     return userRepo.update(id, updateData);
 }
 
@@ -29,6 +31,7 @@ async function loginUser(input) {
     const { email, password } = input;
     const user = await userRepo.getUserByEmail(email);
     if (!user) throw new WrongCredentials();
+    if (!user.active) throw new UserInactiveError();
     const isValid = await comparePassword(password, user.password);
     if (!isValid) throw new WrongCredentials();
 
