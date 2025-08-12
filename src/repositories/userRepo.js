@@ -18,7 +18,7 @@ const UserRepo = {
     },
 
     getAll() {
-        return User.find();
+        return User.find({}, { password: -1 });
     },
 
     getById(id) {

@@ -5,6 +5,18 @@ export function create(data) {
     return customer.save();
 }
 
+export function getAllCustomers(options) {
+    const { offset, limit } = options;
+    return CustomerModel
+        .find()
+        .skip(offset)
+        .limit(limit)
+}
+
+export function countCustomers() {
+    return CustomerModel.countDocuments();
+}
+
 export function getCustomerById(id) {
     return CustomerModel.findById(id);
 }

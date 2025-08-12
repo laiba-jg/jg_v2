@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { type } from 'os';
 
 const KycInfoSchema = new mongoose.Schema({
-    kycId: { type: String, required: true, unique: true },
+    kycId: { type: String, required: true },
     documentType: { type: String, required: true },
     documentNumber: { type: String, required: true },
     issuedDate: { type: Date },
@@ -36,7 +36,7 @@ const CustomerSchema = new mongoose.Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     gender: { type: String, enum: ['Male', 'Female', 'Other', 'Unspecified'], required: true },
-    email: { type: String, required: false, unique: true },
+    email: { type: String, required: false },
     emailVerified: { type: Boolean, required: false, default: false },
     country: { type: String, required: true },
     isMpinSet: { type: Boolean, required: false, default: false },

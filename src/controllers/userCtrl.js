@@ -36,7 +36,6 @@ const updateUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
-        console.log('get all users request');
         const users = await userService.getAllUsers();
         success(res, users);
     } catch (err) {

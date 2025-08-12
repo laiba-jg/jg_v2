@@ -3,7 +3,7 @@ import CustomerNotFoundError from '../errors/CustomerNotFound.js';
 import InvalidMpinError from '../errors/InvalidMpinError.js';
 import MpinNotSetError from '../errors/MpinNotSetError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
-import { create, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
+import { countCustomers, create, getAllCustomers, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { comparePassword, hashPassword } from '../util/crypto.js';
 import { UserType } from '../util/enums.js';
 import { generateOTP, sendSMS } from '../util/otp.js';
@@ -86,3 +86,12 @@ export const validateMpin = async (id, mpin) => {
     await updateCustomer(id, customer);
     return true;
 }
+
+export const getAllCustomersByPagination = async (offset, limit) => {
+    const count = await countCustomers();
+    const data = await getAllCustomers({ offset, limit });
+    return {
+        items: data,
+        count,
+    };
+};
