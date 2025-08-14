@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 import logger from "../util/logger.js";
 import { created, internalServerError, success } from "../util/response.js";
-import { buyTransaction, getAllTransactionSummary, redeemTransaction, sellTransaction, transactionSummaryByCustomerId, getAllTransactionQuantitySummary } from "../services/transactionSvc.js";
+import { buyTransaction, getAllTransactionSummary, redeemTransaction, sellTransaction, transactionSummaryByCustomerId, getAllTransactionQuantitySummary, getAllTransactionsByPagination } from "../services/transactionSvc.js";
 import NoKYCError from "../errors/NoKYCError.js";
 import KYCPendingError from "../errors/KYCPendingError.js";
 import KYCRejectedError from "../errors/KYCRejectedError.js";
@@ -112,7 +112,21 @@ export const getAllQuantitySummary = async (req, res) => {
     }
 }
 
+export const getAll = async (req, res) => {
+    try {
+        const options = {
+            offset: req.query?.offset || 0,
+            limit: req.query?.limit || 10,
+        };
+        if (req.query?.transactionType) options.transactionType = req.query.transactionType;
 
+        const paginatedData = await getAllTransactionsByPagination(options);
+        return success(res, paginatedData);
+    } catch (err) {
+        logger.error(err);
+        return handleError(err, res);
+    }
+}
 
 function handleError(err, res) {
     if (err instanceof CustomerNotFoundError)

@@ -4,18 +4,13 @@ import mongoose from 'mongoose';
 
 
 export const getAllTransactions = (options) => {
-    const { offset, limit, order, transactionType } = options;
+    const { offset, limit, transactionType } = options;
     const where = transactionType ? { transactionType } : {};
 
-    return Transaction.findAndCountAll({
-        where,
-        attributes: {
-            exclude: ['costPrice', 'updatedAt']
-        },
-        offset,
-        limit,
-        order
-    }, {});
+    const promiseData = Transaction.find(where).skip(offset).limit(limit);
+    const promiseCount = Transaction.countDocuments(where);
+
+    return [promiseData, promiseCount];
 }
 export const getTransactionById = (id) => Transaction.findByPk(id);
 
