@@ -5,7 +5,7 @@ import MpinNotSetError from '../errors/MpinNotSetError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import { countCustomers, create, getAllCustomers, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { comparePassword, hashPassword } from '../util/crypto.js';
-import { UserType } from '../util/enums.js';
+import { KYCStatus, UserType } from '../util/enums.js';
 import { generateOTP, sendSMS } from '../util/otp.js';
 import { deleteKey, getKey, setKey } from '../util/redis.js';
 
@@ -15,6 +15,10 @@ export async function createProfile(data) {
     data.userType = UserType.CONSUMER;
     delete data.emailVerified;
     delete data.kyc;
+
+    data.kyc = {
+        kycStatus: KYCStatus.NOT_STARTED
+    };
 
     return create(data);
 }
@@ -95,3 +99,5 @@ export const getAllCustomersByPagination = async (offset, limit) => {
         count,
     };
 };
+
+export const totalCustomers = () => countCustomers();

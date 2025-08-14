@@ -88,3 +88,34 @@ export const getCustomerTransactionSummary = (customerId) => {
     ];
     return Transaction.aggregate(stages);
 }
+
+export const aggregateTransactionsByType = () => Transaction.aggregate([
+    {
+        $group: {
+            _id: "$transactionType",
+            count: { $sum: 1 },
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            type: "$_id",
+            count: 1
+        }
+    }
+]);
+
+export const aggregateTransactionQuantityByType = () => Transaction.aggregate([
+    {
+        $group: {
+            _id: "$transactionType",
+            totalQuantity: { $sum: "$quantity" }
+        }
+    }, {
+        $project: {
+            _id: 0,
+            type: "$_id",
+            count: '$totalQuantity'
+        }
+    }
+]);

@@ -12,6 +12,7 @@ export const PaymentMode = {
 }
 
 export const KYCStatus = {
+    NOT_STARTED: "NotStarted",
     PENDING: "Pending",
     APPROVED: "Approved",
     DEFERRED: "Deferred",

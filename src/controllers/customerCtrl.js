@@ -7,7 +7,7 @@ import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
-import { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, updateProfile as updateCustomerProfile, updateKYCStatus, validateMpin } from '../services/customerSvc.js';
+import { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, updateKYCStatus, validateMpin } from '../services/customerSvc.js';
 import { AuthTokenType } from '../util/enums.js';
 import { generateTempToken, generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
@@ -133,6 +133,17 @@ export const getAll = async (req, res) => {
         const paginatedData = await getAllCustomersByPagination(offset, limit);
         return success(res, paginatedData);
     } catch (err) {
+        logger.error(err);
+        handleError(err, res);
+    }
+}
+
+export const getCustomerSummary = async (req, res) => {
+    try {
+        const count = await totalCustomers();
+        return success(res, { count });
+    } catch (err) {
+        logger.error(err);
         handleError(err, res);
     }
 }

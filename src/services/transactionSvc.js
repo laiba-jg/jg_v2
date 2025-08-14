@@ -1,5 +1,5 @@
 import { getLatestGoldPrice } from "../repositories/goldPriceRepo.js";
-import { createTransaction, getCustomerTransactionSummary } from "../repositories/transactionRepo.js";
+import { aggregateTransactionsByType, createTransaction, getCustomerTransactionSummary, aggregateTransactionQuantityByType } from "../repositories/transactionRepo.js";
 import { getCustomerById } from "../repositories/customerRepo.js";
 import CustomerNotFoundError from "../errors/CustomerNotFound.js";
 import KYCPendingError from "../errors/KYCPendingError.js";
@@ -69,6 +69,10 @@ export const redeemTransaction = async (customerId, data) => {
     };
     return createTransaction(transaction);
 };
+
+export const getAllTransactionSummary = () => aggregateTransactionsByType()
+
+export const getAllTransactionQuantitySummary = () => aggregateTransactionQuantityByType()
 
 async function sellGold(customerId, data) {
     const { quantity } = data;

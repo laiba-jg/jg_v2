@@ -11,7 +11,7 @@ const KycInfoSchema = new mongoose.Schema({
     verified: { type: Boolean, default: false },
     verificationDate: { type: Date },
     verificationComments: { type: String },
-    kycStatus: { type: String, enum: ['Pending', 'Approved', 'Refer', 'Rejected'], default: 'Pending' },
+    kycStatus: { type: String, enum: ['NotStarted', 'Pending', 'Approved', 'Refer', 'Rejected'], default: 'NotStarted' },
     manualApproved: { type: Boolean, default: false },
     manualApprovalStatus: { type: String, enum: ['Pending', 'Approved', 'Refer', 'Rejected'] },
     manualApprovalComments: { type: String },
