@@ -72,7 +72,7 @@ export const redeemTransaction = async (customerId, data) => {
 
 export const getAllTransactionSummary = () => aggregateTransactionsByType()
 
-export const getAllTransactionQuantitySummary = () => aggregateTransactionQuantityByType()
+export const getAllTransactionQuantitySummary = (options) => aggregateTransactionQuantityByType(options)
 
 export const getAllTransactionsByPagination = async (options) => {
     const res = await Promise.all(getAllTransactions(options));

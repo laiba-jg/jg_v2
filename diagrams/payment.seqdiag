@@ -1,0 +1,7 @@
+Mobile App->LeanTech: Initiate payment
+LeanTech->Mobile App: Get intent_id
+API->Mobile App: Entry Pending order
+LeanTech->Bank: Validate and debit
+LeanTech->Api: Send Created Event
+Api -> DB: Update order status
+

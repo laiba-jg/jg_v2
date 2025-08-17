@@ -4,10 +4,17 @@ import mongoose from 'mongoose';
 
 
 export const getAllTransactions = (options) => {
-    const { offset, limit, transactionType } = options;
-    const where = transactionType ? { transactionType } : {};
+    const { offset, limit, transactionType, from, to } = options;
+    const where = {};
+    if (transactionType) where.transactionType = transactionType;
+    if (from) where.createdAt = { $gte: new Date(from), $lte: new Date(to) };
 
-    const promiseData = Transaction.find(where).skip(offset).limit(limit);
+    const promiseData = Transaction
+        .find(where)
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit);
+
     const promiseCount = Transaction.countDocuments(where);
 
     return [promiseData, promiseCount];
@@ -100,17 +107,40 @@ export const aggregateTransactionsByType = () => Transaction.aggregate([
     }
 ]);
 
-export const aggregateTransactionQuantityByType = () => Transaction.aggregate([
-    {
-        $group: {
-            _id: "$transactionType",
-            totalQuantity: { $sum: "$quantity" }
+export const aggregateTransactionQuantityByType = (options) => {
+    const { from, to } = options;
+    if (!from)
+        return Transaction.aggregate([
+            {
+                $group: {
+                    _id: "$transactionType",
+                    totalQuantity: { $sum: "$quantity" }
+                }
+            }, {
+                $project: {
+                    _id: 0,
+                    type: "$_id",
+                    count: '$totalQuantity'
+                }
+            }
+        ]);
+    const fromDt = new Date(from);
+    const toDt = new Date(to);
+    return Transaction.aggregate([
+        {
+            $match: { createdAt: { $gte: fromDt, $lte: toDt } }
+        },
+        {
+            $group: {
+                _id: "$transactionType",
+                totalQuantity: { $sum: "$quantity" }
+            }
+        }, {
+            $project: {
+                _id: 0,
+                type: "$_id",
+                count: '$totalQuantity'
+            }
         }
-    }, {
-        $project: {
-            _id: 0,
-            type: "$_id",
-            count: '$totalQuantity'
-        }
-    }
-]);
+    ]);
+} 

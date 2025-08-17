@@ -12,6 +12,7 @@ import InvalidQuantityError from "../errors/InvalidQuantity.js";
 import InvalidTransactionError from "../errors/InvalidTransactionError.js";
 import CustomerNotFoundError from "../errors/CustomerNotFound.js";
 import NotEnoughGoldError from "../errors/NotEnoughGoldError.js";
+import InvalidDateRangeError from "../errors/InvalidDateRangeError.js";
 
 
 export const buy = async (req, res) => {
@@ -104,7 +105,13 @@ export const getAllSummary = async (req, res) => {
 
 export const getAllQuantitySummary = async (req, res) => {
     try {
-        const aggregatedData = await getAllTransactionQuantitySummary();
+        const options = {};
+        if (req?.query?.from) {
+            if (!req.query?.to) throw new InvalidDateRangeError();
+            options.from = req.query.from;
+            options.to = req.query.to;
+        }
+        const aggregatedData = await getAllTransactionQuantitySummary(options);
         return success(res, aggregatedData);
     } catch (err) {
         logger.error(err);
@@ -119,7 +126,11 @@ export const getAll = async (req, res) => {
             limit: req.query?.limit || 10,
         };
         if (req.query?.transactionType) options.transactionType = req.query.transactionType;
-
+        if (req.query?.from) {
+            if (!req.query?.to) throw new InvalidDateRangeError();
+            options.from = req.query.from;
+            options.to = req.query.to;
+        }
         const paginatedData = await getAllTransactionsByPagination(options);
         return success(res, paginatedData);
     } catch (err) {
@@ -129,6 +140,9 @@ export const getAll = async (req, res) => {
 }
 
 function handleError(err, res) {
+    if (err instanceof InvalidDateRangeError)
+        return res.status(err.status).json({ message: err.message, key: 'invalidDateRange' });
+
     if (err instanceof CustomerNotFoundError)
         return res.status(err.status).json({ message: err.message, key: 'customerNotFound' });
 
