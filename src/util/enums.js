@@ -42,5 +42,13 @@ export const AuthTokenType = {
     CUSTOMER: "Customer",
     TEMPORARY: "Temp",
     USER: "User",
-    SERVICE: "Service"
+    SERVICE: "Service",
+    KYC_SERVICE: "KYC",
+    PAYMENT_GATEWAY_SERVICE: "PaymentGateway",
+};
+
+export const ExternalServices = {
+    ID_WISE: "IDWise",
+    LEAN_TECH: "LeanTech",
+    MY_FATOORAH: "MyFatoorah",
 };

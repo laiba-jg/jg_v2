@@ -13,3 +13,7 @@ export const generateToken = (payload) => {
         expiresIn: settings.tokenExpiry
     });
 };
+
+export const generateServiceToken = (payload) => {
+    return jwt.sign(payload, process.env.JWT_SECRET);
+};

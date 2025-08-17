@@ -11,6 +11,7 @@ import healthRoutes from './routes/healthRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import authenticate from './auth/authenticate.js';
 import YAML from "yamljs";
 import path from 'path';
@@ -51,6 +52,7 @@ const setup = (app) => {
 
 
     app.use('/v1/users', userRoutes);
+    app.use('/v1/admin', adminRoutes);
     // 404 handler
     app.use((req, res, next) => {
         logger.info('request came', req.path);

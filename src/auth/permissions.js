@@ -34,6 +34,7 @@ ac.grant(Roles.SUPER_ADMIN)
     .readAny(Resources.USER)
     .updateAny(Resources.USER)
     .createAny(Resources.USER)
+    .createAny(Resources.AUTH_TOKENS)
 
 
 export default ac;
