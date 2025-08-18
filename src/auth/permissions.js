@@ -15,7 +15,8 @@ ac.grant(Roles.USER)
     .updateOwn(Resources.USER)
     .readAny(Resources.CUSTOMER)
     .updateAny(Resources.CUSTOMER)
-    .readAny(Resources.TRANSACTION);
+    .readAny(Resources.TRANSACTION)
+    .readAny(Resources.INVENTORY)
 
 ac.grant(Roles.ADMIN)
     .readAny(Resources.PROFILE)
@@ -25,6 +26,7 @@ ac.grant(Roles.ADMIN)
     .readAny(Resources.USER)
     .updateAny(Resources.USER)
     .createAny(Resources.USER)
+    .readAny(Resources.INVENTORY)
 
 ac.grant(Roles.SUPER_ADMIN)
     .readAny(Resources.PROFILE)
@@ -35,6 +37,8 @@ ac.grant(Roles.SUPER_ADMIN)
     .updateAny(Resources.USER)
     .createAny(Resources.USER)
     .createAny(Resources.AUTH_TOKENS)
+    .readAny(Resources.INVENTORY)
+    .updateAny(Resources.INVENTORY)
 
 
 export default ac;

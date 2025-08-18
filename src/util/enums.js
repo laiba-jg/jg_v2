@@ -52,3 +52,9 @@ export const ExternalServices = {
     LEAN_TECH: "LeanTech",
     MY_FATOORAH: "MyFatoorah",
 };
+
+export const GoldType = {
+    TWENTY_FOUR_KARAT: '24K',
+    TWENTY_TWO_KARAT: '22K',
+    EIGHTEEN_KARAT: '18K',
+}

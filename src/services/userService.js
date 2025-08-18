@@ -36,6 +36,7 @@ async function loginUser(input) {
     if (!isValid) throw new WrongCredentials();
 
     const payload = {
+        id: user._id,
         firstName: user.firstName,
         LastName: user.lastName,
         email,
