@@ -4,7 +4,8 @@ const Resources = {
     KYC: "KYC",
     USER: "User",
     AUTH_TOKENS: "AuthTokens",
-    INVENTORY: "Inventory"
+    INVENTORY: "Inventory",
+    PAYMENT: "Payment",
 };
 
 export default Resources;

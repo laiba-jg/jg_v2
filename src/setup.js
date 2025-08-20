@@ -13,6 +13,7 @@ import userRoutes from './routes/userRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import inventoryRoutes from './routes/inventoryRoutes.js';
+import webhookRoutes from './routes/webhookRoutes.js';
 import authenticate from './auth/authenticate.js';
 import YAML from "yamljs";
 import path from 'path';
@@ -55,6 +56,7 @@ const setup = (app) => {
     app.use('/v1/users', userRoutes);
     app.use('/v1/admin', adminRoutes);
     app.use('/v1/inventory', inventoryRoutes);
+    app.use('/v1/webhooks', webhookRoutes);
     // 404 handler
     app.use((req, res, next) => {
         logger.info('request came', req.path);

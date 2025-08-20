@@ -40,5 +40,9 @@ ac.grant(Roles.SUPER_ADMIN)
     .readAny(Resources.INVENTORY)
     .updateAny(Resources.INVENTORY)
 
+ac.grant(Roles.SYSTEM)
+    .updateAny(Resources.KYC)
+    .updateAny(Resources.PAYMENT)
+
 
 export default ac;

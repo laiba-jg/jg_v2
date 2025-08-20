@@ -138,7 +138,7 @@ export const getAll = async (req, res) => {
     }
 }
 
-export const getCustomerSummary = async (req, res) => {
+export const getTotalCustomers = async (req, res) => {
     try {
         const count = await totalCustomers();
         return success(res, { count });
@@ -172,4 +172,9 @@ const handleError = (err, res) => {
     }
 
     return internalServerError(res);
+}
+
+
+export default {
+    getTotalCustomers,
 }

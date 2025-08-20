@@ -1,6 +1,7 @@
 import { forbidden } from "../util/response.js";
 import Roles from "./roles.js";
 import ac from './permissions.js';
+import { ExternalServices } from "../util/enums.js";
 
 
 export function authorize(action, resource, checkOwner = false) {
@@ -45,4 +46,31 @@ export function authorizeCreateUpdateUser(req, res, next) {
     if (userRole === Roles.ADMIN && createRole === Roles.SUPER_ADMIN) return forbidden(res);
     if (userRole === Roles.SUPER_ADMIN) return next();
     return next();
+}
+
+export function authorizeKYC() {
+    return (req, res, next) => {
+        const role = req.user?.role;
+        const svc = req.user?.service;
+        if (!role) return forbidden(res);
+
+        let permission = svc === ExternalServices.ID_WISE && ac.can(role)[`${action}Any`](resource);
+
+        if (!permission.granted) return forbidden(res);
+        next();
+    };
+}
+
+export function authorizePaymentGateway() {
+    return (req, res, next) => {
+        const role = req.user?.role;
+        const svc = req.user?.service;
+        if (!role) return forbidden(res);
+
+        let permission = svc === ExternalServices.LEAN_TECH && ac.can(role)[`${action}Any`](resource);
+
+        if (!permission.granted) return forbidden(res);
+
+        next();
+    };
 }
