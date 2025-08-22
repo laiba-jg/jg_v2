@@ -2,6 +2,7 @@ import AccountLockedError from '../errors/AccountLockedError.js';
 import CustomerNotFoundError from '../errors/CustomerNotFound.js';
 import InvalidMpinError from '../errors/InvalidMpinError.js';
 import MpinNotSetError from '../errors/MpinNotSetError.js';
+import NoPhoneError from '../errors/NoPhoneError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import { countCustomers, create, getAllCustomers, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { comparePassword, hashPassword } from '../util/crypto.js';

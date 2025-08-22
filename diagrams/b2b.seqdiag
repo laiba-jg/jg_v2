@@ -1,0 +1,7 @@
+User --> Business Partner: Login
+Business Partner --> User: Send JWT token signed by private key
+User -> JustGold: Onboard (send auth token)
+JustGold -> Business Partner: Download public key
+JustGold -> JustGold: Validate user auth token using public key
+JustGold -> User: Create User Profile
+JustGold -> User: Success (status: 201)
