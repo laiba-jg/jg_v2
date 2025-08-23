@@ -48,7 +48,7 @@ export function authorizeCreateUpdateUser(req, res, next) {
     return next();
 }
 
-export function authorizeKYC() {
+export function authorizeKYC(action, resource, checkOwner = false) {
     return (req, res, next) => {
         const role = req.user?.role;
         const svc = req.user?.service;
