@@ -17,8 +17,6 @@ router.get('/summary', authenticate, customerCtrl.getTotalCustomers);
 router.put('/mpin', authenticate, createMpin);
 router.post('/mpin/verify', authenticate, verifyMpin);
 
-router.put('/initiate/kyc/:id', authenticate, customerCtrl.initiateKyc);
-
 router.get('/', authenticate, getAll);
 
 export default router;

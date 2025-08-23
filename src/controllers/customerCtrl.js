@@ -7,7 +7,7 @@ import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
-import customerSvc, { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin } from '../services/customerSvc.js';
+import { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin } from '../services/customerSvc.js';
 import { AuthTokenType } from '../util/enums.js';
 import { generateTempToken, generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
@@ -137,17 +137,6 @@ export const getTotalCustomers = async (req, res) => {
     }
 }
 
-const initiateKyc = async (req, res) => {
-    try {
-        const journeyId = req.body.journeyId;
-        await customerSvc.setKycJourneyId(req.params.id, journeyId)
-        return noContent(res);
-    } catch (err) {
-        logger.error(err);
-        handleError(err, res);
-    }
-};
-
 const handleError = (err, res) => {
     if (err instanceof InvalidMpinError) {
         return res.status(err.status).json({ message: err.message, key: 'invalidMpin' });
@@ -174,8 +163,6 @@ const handleError = (err, res) => {
     return internalServerError(res);
 }
 
-
 export default {
     getTotalCustomers,
-    initiateKyc,
 }
