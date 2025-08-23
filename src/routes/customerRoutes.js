@@ -1,5 +1,5 @@
 import express from 'express';
-import { create, getProfile, updateProfile, updateKyc, createMpin, verifyMpin, getAll } from '../controllers/customerCtrl.js';
+import { create, getProfile, updateProfile, createMpin, verifyMpin, getAll } from '../controllers/customerCtrl.js';
 import customerCtrl, { sendOTP, verifyOTP } from '../controllers/customerCtrl.js';
 import authenticate from '../auth/authenticate.js';
 
@@ -17,7 +17,7 @@ router.get('/summary', authenticate, customerCtrl.getTotalCustomers);
 router.put('/mpin', authenticate, createMpin);
 router.post('/mpin/verify', authenticate, verifyMpin);
 
-router.put('/kyc/:id', authenticate, updateKyc);
+router.put('/initiate/kyc/:id', authenticate, customerCtrl.initiateKyc);
 
 router.get('/', authenticate, getAll);
 

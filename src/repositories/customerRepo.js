@@ -25,3 +25,7 @@ export function updateCustomer(id, data) {
     return CustomerModel.findByIdAndUpdate(id, data, { new: true, upsert: false });
 }
 
+
+export default {
+    updateCustomer,
+}

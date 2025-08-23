@@ -4,7 +4,7 @@ import InvalidMpinError from '../errors/InvalidMpinError.js';
 import MpinNotSetError from '../errors/MpinNotSetError.js';
 import NoPhoneError from '../errors/NoPhoneError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
-import { countCustomers, create, getAllCustomers, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
+import customerRepo, { countCustomers, create, getAllCustomers, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { comparePassword, hashPassword } from '../util/crypto.js';
 import { KYCStatus, UserType } from '../util/enums.js';
 import { generateOTP, sendSMS } from '../util/otp.js';
@@ -31,11 +31,6 @@ export const updateProfile = async (id, data) => {
     delete data.phone;
     delete data.kyc;
     return updateCustomer(id, data);
-}
-
-// Only allow authorised person to update KYC status
-export const updateKYCStatus = async (id, kyc) => {
-    return updateCustomer(id, kyc);
 }
 
 export const generateAndSendOTP = async (phone) => {
@@ -101,4 +96,14 @@ export const getAllCustomersByPagination = async (offset, limit) => {
     };
 };
 
+export const setKycJourneyId = (customerId, journeyId) => {
+    const fields = { $set: { 'kyc.id': journeyId } };
+    return customerRepo.updateCustomer(customerId, fields);
+};
+
 export const totalCustomers = () => countCustomers();
+
+
+export default {
+    setKycJourneyId,
+}

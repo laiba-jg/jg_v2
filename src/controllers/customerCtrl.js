@@ -7,7 +7,7 @@ import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
-import { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, updateKYCStatus, validateMpin } from '../services/customerSvc.js';
+import customerSvc, { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin } from '../services/customerSvc.js';
 import { AuthTokenType } from '../util/enums.js';
 import { generateTempToken, generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
@@ -51,17 +51,6 @@ export const updateProfile = async (req, res) => {
         return noContent(res);
     } catch (err) {
         logger.error('Error updating profile:', err, req.params.id, req.body);
-        return internalServerError(res);
-    }
-}
-
-export const updateKyc = async (req, res) => {
-    try {
-        const id = req.params.id;
-        await updateKYCStatus(id, req.body);
-        return noContent(res);
-    } catch (err) {
-        logger.error('Error updating kyc:', req.params.id, req.body, err);
         return internalServerError(res);
     }
 }
@@ -148,6 +137,17 @@ export const getTotalCustomers = async (req, res) => {
     }
 }
 
+const initiateKyc = async (req, res) => {
+    try {
+        const journeyId = req.body.journeyId;
+        await customerSvc.setKycJourneyId(req.params.id, journeyId)
+        return noContent(res);
+    } catch (err) {
+        logger.error(err);
+        handleError(err, res);
+    }
+};
+
 const handleError = (err, res) => {
     if (err instanceof InvalidMpinError) {
         return res.status(err.status).json({ message: err.message, key: 'invalidMpin' });
@@ -177,4 +177,5 @@ const handleError = (err, res) => {
 
 export default {
     getTotalCustomers,
+    initiateKyc,
 }

@@ -1,19 +1,20 @@
 import mongoose from 'mongoose';
-import { type } from 'os';
 
 const KycInfoSchema = new mongoose.Schema({
-    kycId: { type: String, required: true },
-    documentType: { type: String, required: true },
-    documentNumber: { type: String, required: true },
+    kycId: { type: String },
+    referenceNo: { type: String },
+    systemDecision: { type: String },
+    documentType: { type: String },
+    documentNumber: { type: String },
     issuedDate: { type: Date },
     expiryDate: { type: Date },
     documentUrl: { type: String },
     verified: { type: Boolean, default: false },
     verificationDate: { type: Date },
     verificationComments: { type: String },
-    kycStatus: { type: String, enum: ['NotStarted', 'Pending', 'Approved', 'Refer', 'Rejected'], default: 'NotStarted' },
+    kycStatus: { type: String, enum: ['NotStarted', 'Completed', 'Pending', 'Approved', 'Refer', 'Rejected'], default: 'NotStarted' },
     manualApproved: { type: Boolean, default: false },
-    manualApprovalStatus: { type: String, enum: ['Pending', 'Approved', 'Refer', 'Rejected'] },
+    manualApprovalStatus: { type: String, enum: ['Pending', 'Completed', 'Approved', 'Refer', 'Rejected'] },
     manualApprovalComments: { type: String },
     manualapprovalDate: { type: Date },
     manualApprovalBy: { type: String },
