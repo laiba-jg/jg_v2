@@ -60,8 +60,8 @@ export const GoldType = {
 }
 
 export const MessageType = {
-    PUSH_NOTIFICATION: 'PushNotification',
-    EMAIL: 'Email',
-    KYC: 'KYC',
-    PAYMENT: 'PAYMENT'
+    PUSH_NOTIFICATION: 'pushNotification',
+    EMAIL: 'email',
+    KYC: 'kyc',
+    PAYMENT: 'payment'
 };
