@@ -7,12 +7,12 @@ import Resources from '../auth/resources.js';
 
 const router = express.Router();
 
-router.put('/kyc',
+router.post('/kyc',
     authenticate,
     authorizeKYC(Actions.UPDATE, Resources.KYC, false),
     webhookCtrl.kycWebhook);
 
-router.put('/payment',
+router.post('/payment',
     authenticate,
     authorizePaymentGateway(Actions.UPDATE, Resources.PAYMENT, false),
     webhookCtrl.paymentGatewayWebhook);
