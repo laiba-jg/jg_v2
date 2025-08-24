@@ -27,7 +27,6 @@ const TransactionSchema = new mongoose.Schema({
     sellPrice: { type: Number, required: false },
     paymentMode: {
         type: String,
-        enum: ['CreditCard', 'DebitCard', 'BankTransfer', 'GooglePay', 'ApplePay'],
         required: false
     },
     transactionType: {
@@ -43,12 +42,13 @@ const TransactionSchema = new mongoose.Schema({
     deliveryAddress: AddressSchema,
     paymentGateway: { type: String, required: false },
     paymentTransactionId: { type: String, required: false },
-    createdAt: { type: Date, default: Date.now },
+    paymentReferenceId: { type: String, required: false },
+    paymentId: { type: String, required: false },
+    createdAt: { type: Date },
     updatedAt: { type: Date, default: Date.now }
 });
 
 TransactionSchema.pre('save', function (next) {
-    this.createdAt = Date.now();
     this.updatedAt = Date.now();
     next();
 });

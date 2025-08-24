@@ -8,7 +8,7 @@ import NoKYCError from "../errors/NoKYCError.js";
 import NoGoldPriceError from "../errors/NoGoldPriceError.js";
 import InvalidTransactionError from "../errors/InvalidTransactionError.js";
 import InvalidQuantityError from "../errors/InvalidQuantity.js";
-import { KYCStatus, PaymentGateway, PaymentMode, TransactionType } from "../util/enums.js";
+import { KYCStatus, PaymentGateway, PaymentMode, TransactionStatus, TransactionType } from "../util/enums.js";
 import Decimal from "decimal.js";
 import InvalidAmountError from "../errors/InvalidAmountError.js";
 import NotEnoughGoldError from "../errors/NotEnoughGoldError.js";
@@ -137,7 +137,7 @@ const getQty = (amount, pricePerGram) => {
 };
 
 const buyGoldByQuantity = async (customerId, data) => {
-    const { quantity, paymentMode, paymentGateway, paymentTransactionId } = data;
+    const { quantity, paymentGateway, paymentTransactionId } = data;
     if (quantity <= 0) throw new InvalidQuantityError();
     const latestGoldPrice = await getLatestGoldPrice();
     if (!latestGoldPrice) throw new NoGoldPriceError();
@@ -157,16 +157,17 @@ const buyGoldByQuantity = async (customerId, data) => {
         costPrice: costPrice,
         costAmount: costAmount,
         quantity,
-        paymentMode,
+        status: TransactionStatus.PENDING,
         transferCharges: getTransferCharges(paymentMode, totalAmount),
         paymentGateway,
         paymentTransactionId,
+        createdAt: new Date(),
     };
     return createTransaction(transaction);
 };
 
 const buyGoldByAmt = async (customerId, data) => {
-    const { amount, paymentMode, paymentGateway, paymentTransactionId } = data;
+    const { amount, paymentGateway, paymentTransactionId } = data;
     if (amount < 10) throw new InvalidAmountError();
 
     const amountAavilableAfterTransferCharges = new Decimal(amount).sub(getTransferCharges(paymentMode, amount));
@@ -188,10 +189,11 @@ const buyGoldByAmt = async (customerId, data) => {
         costPrice: costPrice,
         costAmount: costAmount,
         quantity: qty,
-        paymentMode,
+        status: TransactionStatus.PENDING,
         transferCharges: getTransferCharges(paymentMode, amount),
         paymentGateway,
         paymentTransactionId,
+        createdAt: new Date(),
     };
     return createTransaction(transaction);
 };

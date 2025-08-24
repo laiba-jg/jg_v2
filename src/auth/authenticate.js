@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { unauthorised } from '../util/response.js';
+import { validateSignature } from 'myfatoorah-toolkit';
+import logger from '../util/logger.js';
 
 const authenticate = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -14,5 +16,22 @@ const authenticate = (req, res, next) => {
         next();
     });
 };
+
+export async function validateMyFatoorahSignature(req, res, next) {
+    try {
+        const signature = req.headers['myfatoorah-signature'];
+        if (!signature) return unauthorised(res);
+        const isValid = await validateSignature(req.body, signature, process.env.MY_FATOORAH_SECRET);
+        if (!isValid) {
+            logger.info('MyFatoorah webhook signature validation failed');
+            return unauthorised(res);
+        }
+        logger.info('MyFatoorah webhook signature validated');
+        next();
+    } catch (err) {
+        logger.error(err);
+        return unauthorised(res);
+    }
+}
 
 export default authenticate;

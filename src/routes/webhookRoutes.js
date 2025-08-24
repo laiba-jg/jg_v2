@@ -1,5 +1,5 @@
 import express from 'express';
-import authenticate from '../auth/authenticate.js';
+import authenticate, { validateMyFatoorahSignature } from '../auth/authenticate.js';
 import webhookCtrl from '../controllers/webhookCtrl.js';
 import { authorizeKYC, authorizePaymentGateway } from '../auth/authorize.js';
 import Actions from '../auth/actions.js';
@@ -12,9 +12,8 @@ router.post('/kyc',
     authorizeKYC(Actions.UPDATE, Resources.KYC, false),
     webhookCtrl.kycWebhook);
 
-router.post('/payment',
-    authenticate,
-    authorizePaymentGateway(Actions.UPDATE, Resources.PAYMENT, false),
-    webhookCtrl.paymentGatewayWebhook);
+router.post('/myfatoorah',
+    validateMyFatoorahSignature,
+    webhookCtrl.myFatoorah);
 
 export default router;

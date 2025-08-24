@@ -1,12 +1,24 @@
 import KYCSchema from "../schema/KYCSchema.js";
 import messageSvc from "../services/messageSvc.js";
-import { MessageType } from "../util/enums.js";
+import { MessageType, MyFatoorahEvents } from "../util/enums.js";
 import logger from "../util/logger.js"
-import { badRequest, internalServerError, success } from "../util/response.js";
+import { badRequest, internalServerError, noContent, success } from "../util/response.js";
 
-function paymentGatewayWebhook(req, res) {
+async function myFatoorah(req, res) {
     try {
-        return success(res, req.body);
+        const { Event, Data } = req.body;
+        if (Event === MyFatoorahEvents.TRANSACTION_STATUS_CHANGED) {
+            const message = {
+                type: MessageType.MY_FATOORAH,
+                payload: Data,
+            };
+            await messageSvc.sendMessage(message);
+            return success(res);
+        }
+
+        logger.info('Incorrect event from MyFatoorah');
+        return noContent(res);
+
     } catch (err) {
         logger.error(err);
         handleError(err, res);
@@ -35,6 +47,6 @@ const handleError = (err, res) => {
 }
 
 export default {
-    paymentGatewayWebhook,
+    myFatoorah,
     kycWebhook,
 }

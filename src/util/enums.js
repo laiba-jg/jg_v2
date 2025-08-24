@@ -36,6 +36,7 @@ export const TransactionType = {
 export const PaymentGateway = {
     MY_FATOORAH: "MyFatoorah",
     LEAN_TECH: "LeanTech",
+    PAY10: "Pay10",
 };
 
 export const AuthTokenType = {
@@ -63,5 +64,10 @@ export const MessageType = {
     PUSH_NOTIFICATION: 'pushNotification',
     EMAIL: 'email',
     KYC: 'kyc',
-    PAYMENT: 'payment'
+    PAYMENT: 'payment',
+    MY_FATOORAH: "myFatoorah",
+};
+
+export const MyFatoorahEvents = {
+    TRANSACTION_STATUS_CHANGED: 'TransactionsStatusChanged',
 };
