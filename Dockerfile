@@ -1,5 +1,5 @@
 # Base stage
-FROM node:23-alpine AS base
+FROM node:24-alpine AS base
 
 # Install dependencies (add curl for debugging)
 RUN apk add --no-cache python3 make g++ postgresql-client curl

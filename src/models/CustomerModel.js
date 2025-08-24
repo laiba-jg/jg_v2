@@ -18,7 +18,7 @@ const KycInfoSchema = new mongoose.Schema({
     manualApprovalComments: { type: String },
     manualapprovalDate: { type: Date },
     manualApprovalBy: { type: String },
-    createdAt: { type: Date, required: true },
+    createdAt: { type: Date },
     updatedAt: { type: Date, default: Date.now }
 }, { _id: false });
 
