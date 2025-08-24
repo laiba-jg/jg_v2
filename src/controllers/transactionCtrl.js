@@ -56,11 +56,11 @@ export const summary = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(customerId))
             return res.status(400).json({ message: 'Invalid customer ID', key: 'invalidCustomerId' });
 
-        const [summary] = await transactionSummaryByCustomerId(customerId);
+        const { summary, info } = await transactionSummaryByCustomerId(customerId);
         if (summary) {
             summary.availableToSell = summary.availableToSell < 0 ? 0 : summary.availableToSell;
         }
-        return success(res, summary);
+        return success(res, { summary, ...info });
     } catch (err) {
         console.error(err);
         const logObject = {

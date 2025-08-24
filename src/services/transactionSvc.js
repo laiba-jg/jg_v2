@@ -1,5 +1,5 @@
 import { getLatestGoldPrice } from "../repositories/goldPriceRepo.js";
-import { aggregateTransactionsByType, createTransaction, getCustomerTransactionSummary, aggregateTransactionQuantityByType, getAllTransactions } from "../repositories/transactionRepo.js";
+import { aggregateTransactionsByType, createTransaction, getCustomerTransactionSummary, aggregateTransactionQuantityByType, getAllTransactions, getTransactionsByCustomerId } from "../repositories/transactionRepo.js";
 import { getCustomerById } from "../repositories/customerRepo.js";
 import CustomerNotFoundError from "../errors/CustomerNotFound.js";
 import KYCPendingError from "../errors/KYCPendingError.js";
@@ -14,6 +14,7 @@ import InvalidAmountError from "../errors/InvalidAmountError.js";
 import NotEnoughGoldError from "../errors/NotEnoughGoldError.js";
 import InvalidRedeemQuantityError from "../errors/InvalidRedeemQuantityError.js";
 import settings from "../config/defaults.js";
+import transaction from "../util/transaction.js";
 
 export const buyTransaction = async (customerId, data) => {
     const customer = await getCustomerById(customerId);
@@ -46,7 +47,15 @@ export const sellTransaction = async (customerId, data) => {
     throw new NoKYCError('Customer does not have KYC approved');
 };
 
-export const transactionSummaryByCustomerId = async (customerId) => getCustomerTransactionSummary(customerId);
+export const transactionSummaryByCustomerId = async (customerId) => {
+    const [summary] = await getCustomerTransactionSummary(customerId);
+    const transactions = await getTransactionsByCustomerId(customerId);
+    const buyAvgInfo = transaction.getCustomerTransactionSummary(transactions);
+    return {
+        summary,
+        buyAvgInfo,
+    };
+}
 
 
 export const redeemTransaction = async (customerId, data) => {

@@ -143,4 +143,8 @@ export const aggregateTransactionQuantityByType = (options) => {
             }
         }
     ]);
-} 
+}
+
+export const getTransactionByCustomerId = (customerId) => {
+    return Transaction.find({ customerId });
+};
