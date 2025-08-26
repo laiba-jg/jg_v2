@@ -19,6 +19,7 @@ import YAML from "yamljs";
 import path from 'path';
 import { fileURLToPath } from "url";
 import cors from 'cors';
+import { isLocal } from './util/env.js';
 
 
 // Recreate __dirname in ESM
@@ -32,7 +33,21 @@ const setup = (app) => {
     app.use(express.json({ limit: '10kb' }));
     app.use(morgan('combined'));
     app.use(compression());
-    app.use(cors());
+    if (isLocal()) app.use(cors());
+    else {
+        const allowedDomains = ["https://admin.dev.justgold.me", "https://admin.justgold.me"];
+        app.use(
+            cors({
+                origin: (origin, callback) => {
+                    if (!origin || allowedDomains.includes(origin)) {
+                        callback(null, true);
+                    } else {
+                        callback(null, false);
+                    }
+                },
+            })
+        );
+    }
     app.use("/v1/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 
