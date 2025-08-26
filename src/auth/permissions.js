@@ -7,8 +7,8 @@ const ac = new AccessControl();
 ac.grant(Roles.CUSTOMER)
     .readOwn(Resources.PROFILE)
     .updateOwn(Resources.PROFILE)
-    .createOwn(Resources.TRANSACTION);
-
+    .createAny(Resources.TRANSACTION)
+    .readOwn(Resources.TRANSACTIONS_SUMMARY);
 
 ac.grant(Roles.USER)
     .readOwn(Resources.USER)

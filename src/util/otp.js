@@ -24,7 +24,7 @@ export async function sendSMS(phone, otp) {
             to: phone.countryCode + phone.number
         });
     } catch (err) {
-        logger.error('Failed to send OTP', err);
+        logger.error(err);
         throw new SendOTPError();
     }
 }
