@@ -4,7 +4,7 @@ import InvalidMpinError from '../errors/InvalidMpinError.js';
 import MpinNotSetError from '../errors/MpinNotSetError.js';
 import NoPhoneError from '../errors/NoPhoneError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
-import { countCustomers, create, getAllCustomers, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
+import customerRepo, { countCustomers, create, getAllCustomers, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { comparePassword, hashPassword } from '../util/crypto.js';
 import { KYCStatus, UserType } from '../util/enums.js';
 import { generateOTP, sendSMS } from '../util/otp.js';
@@ -97,3 +97,9 @@ export const getAllCustomersByPagination = async (offset, limit) => {
 };
 
 export const totalCustomers = () => countCustomers();
+
+const getCustomerByPhone = (phone) => customerRepo.getCustomerByPhone(phone);
+
+export default {
+    getCustomerByPhone,
+};

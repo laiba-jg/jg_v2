@@ -7,7 +7,7 @@ import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
-import { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin } from '../services/customerSvc.js';
+import customerSvc, { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin } from '../services/customerSvc.js';
 import { AuthTokenType } from '../util/enums.js';
 import { generateTempToken, generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
@@ -76,7 +76,11 @@ export const verifyOTP = async (req, res) => {
         const { phone, otp } = req.body;
         const isValid = await isOTPValid(phone, otp);
         if (isValid) {
-            const token = await generateTempToken({ tokenType: AuthTokenType.TEMPORARY, phone: req.body.phone, role: Roles.CUSTOMER });
+            const customer = await customerSvc.getCustomerByPhone(phone);
+            // customer exists
+            const token = customer
+                ? await generateToken({ tokenType: AuthTokenType.CUSTOMER, customerExists: true, id: customer._id, role: Roles.CUSTOMER })
+                : await generateTempToken({ tokenType: AuthTokenType.TEMPORARY, phone: req.body.phone, role: Roles.CUSTOMER });
             return success(res, { token });
         }
         return res.status(400).json({ message: 'Invalid OTP', key: 'invalidOTP' });

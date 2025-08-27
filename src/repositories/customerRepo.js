@@ -25,7 +25,11 @@ export function updateCustomer(id, data) {
     return CustomerModel.findByIdAndUpdate(id, data, { new: true, upsert: false });
 }
 
+function getCustomerByPhone(phone) {
+    return CustomerModel.findOne({ phone }, { mpin: 0 });
+}
 
 export default {
     updateCustomer,
+    getCustomerByPhone,
 }
