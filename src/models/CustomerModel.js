@@ -53,6 +53,7 @@ const CustomerSchema = new mongoose.Schema({
     userType: { type: String, enum: ['Consumer', 'Business'], required: true },
     kyc: KycInfoSchema,
     addresses: { type: [AddressSchema], default: [] },
+    isTermsAccepted: { type: Boolean, required: true },
     createdAt: { type: Date },
     updatedAt: { type: Date, default: Date.now },
 });
