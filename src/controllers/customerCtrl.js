@@ -73,15 +73,33 @@ export const sendOTP = async (req, res) => {
 
 export const verifyOTP = async (req, res) => {
     try {
-        const { phone, otp } = req.body;
+        const { phone, otp, language } = req.body;
+
         const isValid = await isOTPValid(phone, otp);
         if (isValid) {
-            const customer = await customerSvc.getCustomerByPhone(phone);
-            // customer exists
-            const token = customer
-                ? await generateToken({ tokenType: AuthTokenType.CUSTOMER, customerExists: true, id: customer._id, role: Roles.CUSTOMER })
-                : await generateTempToken({ tokenType: AuthTokenType.TEMPORARY, phone: req.body.phone, role: Roles.CUSTOMER });
-            return success(res, { token });
+        const customer = await customerSvc.getCustomerByPhone(phone);
+
+        const payload = customer
+            ? {
+                tokenType: AuthTokenType.CUSTOMER,
+                customerExists: true,
+                id: customer._id,
+                role: Roles.CUSTOMER,
+            }
+            : {
+                tokenType: AuthTokenType.TEMPORARY,
+                phone,
+                role: Roles.CUSTOMER,
+            };
+
+        if (language) {
+            payload.language = language; 
+        }
+
+        const token = customer
+            ? await generateToken(payload)
+            : await generateTempToken(payload);
+        return success(res, { token });
         }
         return res.status(400).json({ message: 'Invalid OTP', key: 'invalidOTP' });
     } catch (err) {
