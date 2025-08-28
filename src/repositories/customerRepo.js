@@ -29,7 +29,13 @@ function getCustomerByPhone(phone) {
     return CustomerModel.findOne({ phone }, { mpin: 0 });
 }
 
+function getCustomerByEmail(email) {
+    return CustomerModel.findOne({ email }, { mpin: 0 });
+}
+
+
 export default {
     updateCustomer,
     getCustomerByPhone,
+    getCustomerByEmail,
 }

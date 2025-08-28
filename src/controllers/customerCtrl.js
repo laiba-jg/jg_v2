@@ -7,7 +7,8 @@ import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
-import customerSvc, { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin } from '../services/customerSvc.js';
+import ForgotMpinError from '../errors/ForgotMpinError.js';
+import customerSvc, { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin , resetMpin} from '../services/customerSvc.js';
 import { AuthTokenType } from '../util/enums.js';
 import { generateTempToken, generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
@@ -15,6 +16,7 @@ import { badRequest, created, internalServerError, noContent, notFound, success 
 
 export const create = async (req, res) => {
     try {
+        //todo get language from temp jwt
         const data = req.body;
         const validationResult = ProfileSchema.validate(data);
         if (validationResult.error) return badRequest(res, { message: validationResult.error.details, key: '400' });
@@ -57,13 +59,14 @@ export const updateProfile = async (req, res) => {
 
 export const sendOTP = async (req, res) => {
     try {
-        await generateAndSendOTP(req.body.phone);
+        const { phone, email } = req.body;
+        await generateAndSendOTP({ phone, email });
         return success(res, { message: 'OTP sent successfully', key: 'otpSent' });
     } catch (err) {
-        console.error(err);
         const logObj = {
             message: err.message,
             phone: req.body.phone,
+            email: req.body.email,
             stack: err.stack
         }
         logger.error('Error sending OTP:', logObj);
@@ -73,23 +76,46 @@ export const sendOTP = async (req, res) => {
 
 export const verifyOTP = async (req, res) => {
     try {
-        const { phone, otp } = req.body;
-        const isValid = await isOTPValid(phone, otp);
+        const { phone, email, otp, language } = req.body;
+
+        if (!phone && !email) {
+            return res.status(400).json({ message: 'Phone or Email required', key: 'missingIdentifier' });
+        }
+
+        const isValid = await isOTPValid({ phone, email }, otp);
+
         if (isValid) {
-            const customer = await customerSvc.getCustomerByPhone(phone);
-            // customer exists
+            const customer = phone
+                ? await customerSvc.getCustomerByPhone(phone)
+                : await customerSvc.getCustomerByEmail(email);
+
+            const payload = customer
+                ? {
+                    tokenType: AuthTokenType.CUSTOMER,
+                    customerExists: true,
+                    id: customer._id,
+                    role: Roles.CUSTOMER,
+                }
+                : {
+                    tokenType: AuthTokenType.TEMPORARY,
+                    ...(phone ? { phone } : { email }),
+                    role: Roles.CUSTOMER,
+                };
+
+            if (language) payload.language = language;
+
             const token = customer
-                ? await generateToken({ tokenType: AuthTokenType.CUSTOMER, customerExists: true, id: customer._id, role: Roles.CUSTOMER })
-                : await generateTempToken({ tokenType: AuthTokenType.TEMPORARY, phone: req.body.phone, role: Roles.CUSTOMER });
+                ? await generateToken(payload)
+                : await generateTempToken(payload);
             return success(res, { token });
         }
         return res.status(400).json({ message: 'Invalid OTP', key: 'invalidOTP' });
     } catch (err) {
-        const logObj = {
+        logger.error('Error verifying OTP:', {
             message: err.message,
-            phone: req.body.phone,
-        }
-        logger.error('Error verifying OTP:', logObj);
+            phone: req.body?.phone,
+            email: req.body?.email
+        });
         return handleError(err, res);
     }
 }
@@ -108,13 +134,50 @@ export const createMpin = async (req, res) => {
 
 export const verifyMpin = async (req, res) => {
     try {
-        const id = req.user.id;
-        const { mpin } = req.body;
-        await validateMpin(id, mpin);
-        const token = await generateToken({ tokenType: AuthTokenType.CUSTOMER, id: req.user.id, role: req.user.role });
+        const { phone, email, mpin } = req.body;
+
+        if (!phone && !email) {
+            return res.status(400).json({ message: 'Phone or Email required', key: 'missingIdentifier' });
+        }
+
+        const customer = phone
+            ? await customerSvc.getCustomerByPhone(phone)
+            : await customerSvc.getCustomerByEmail(email);
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found', key: 'customerNotFound' });
+        }
+
+        await validateMpin(customer._id, mpin);
+
+        const payload = {
+            tokenType: AuthTokenType.CUSTOMER,
+            id: customer._id,
+            role: Roles.CUSTOMER,
+        };
+
+
+        const token = await generateToken(payload);
+
         return success(res, { token });
+
     } catch (err) {
-        logger.error('Error verifying MPIN:', err, req.params.id, req.body);
+        logger.error('Error verifying MPIN:', {
+            message: err.message,
+            phone: req.body?.phone,
+            email: req.body?.email
+        });
+        return handleError(err, res);
+    }
+}
+
+export const forgotMpin = async (req, res) => {
+    try {
+        const customerId = req.user.id; 
+        const result = await resetMpin(customerId);
+        return success(res, result);
+    } catch (err) {
+        logger.error('Error in forgotMpin:', { message: err.message, customerId: req.user.id });
         return handleError(err, res);
     }
 }
@@ -162,6 +225,9 @@ const handleError = (err, res) => {
     }
     if (err instanceof MpinNotSetError) {
         return res.status(401).json({ message: 'No MPIN', key: 'mPinNotSet' });
+    }
+    if (err instanceof ForgotMpinError) {
+        return res.status(err.status).json({ message: err.message, key: 'forgotMpinFailed' });
     }
 
     return internalServerError(res);
