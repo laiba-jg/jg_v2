@@ -7,7 +7,7 @@ import WrongMpinError from '../errors/WrongMpinError.js';
 import customerRepo, { countCustomers, create, getAllCustomers, getCustomerById, updateCustomer } from '../repositories/customerRepo.js';
 import { comparePassword, hashPassword } from '../util/crypto.js';
 import { KYCStatus, UserType } from '../util/enums.js';
-import { generateOTP, sendSMS } from '../util/otp.js';
+import { generateOTP, sendSMS, sendEmailOTP } from '../util/otp.js';
 import { deleteKey, getKey, setKey } from '../util/redis.js';
 
 export async function createProfile(data) {
@@ -33,23 +33,40 @@ export const updateProfile = async (id, data) => {
     return updateCustomer(id, data);
 }
 
-export const generateAndSendOTP = async (phone) => {
-    if (!phone || !phone.countryCode || !phone.number)
-        throw new NoPhoneError();
-    const toPhone = phone.countryCode + phone.number;
+export const generateAndSendOTP = async ({ phone, email }) => {
+    if (!phone && !email) throw new NoPhoneError('Phone or Email required');
+
     const otp = generateOTP();
-    await setKey(`otp:${toPhone}`, otp, 300); // 5mns
-    await sendSMS(phone, otp);
+    console.log('Generated OTP:', otp);
+
+    if (phone?.countryCode && phone?.number) {
+        const toPhone = phone.countryCode + phone.number;
+        await setKey(`otp:phone:${toPhone}`, otp, 300); // 5 mins
+        await sendSMS(phone, otp);
+    }
+
+    if (email) {
+        await setKey(`otp:email:${email}`, otp, 300);
+        const otpExpiryMinutes = parseInt(process.env.OTP_EXPIRY_MINUTES, 10) || 10;
+        await sendEmailOTP(email, otp, otpExpiryMinutes, 'login'); 
+    }
 }
 
-export const isOTPValid = async (phone, userOTP) => {
-    if (!phone || !phone.countryCode || !phone.number)
-        throw new NoPhoneError()
-    const toPhone = phone.countryCode + phone.number;
-    const redisKey = `otp:${toPhone}`;
+export const isOTPValid = async ({ phone, email }, userOTP) => {
+    let redisKey;
+
+    if (phone?.countryCode && phone?.number) {
+        const toPhone = phone.countryCode + phone.number;
+        redisKey = `otp:phone:${toPhone}`;
+    } else if (email) {
+        redisKey = `otp:email:${email}`;
+    } else {
+        throw new NoPhoneError('Phone or Email required');
+    }
+
     const storedOtp = await getKey(redisKey);
     if (storedOtp === userOTP) {
-        await deleteKey(redisKey);
+        await deleteKey(redisKey); 
         return true;
     }
     return false;
@@ -112,6 +129,9 @@ export const totalCustomers = () => countCustomers();
 
 const getCustomerByPhone = (phone) => customerRepo.getCustomerByPhone(phone);
 
+const getCustomerByEmail = (email) => customerRepo.getCustomerByEmail(email);
+
 export default {
     getCustomerByPhone,
+    getCustomerByEmail,
 };

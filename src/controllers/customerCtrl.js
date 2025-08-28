@@ -57,13 +57,14 @@ export const updateProfile = async (req, res) => {
 
 export const sendOTP = async (req, res) => {
     try {
-        await generateAndSendOTP(req.body.phone);
+        const { phone, email } = req.body;
+        await generateAndSendOTP({ phone, email });
         return success(res, { message: 'OTP sent successfully', key: 'otpSent' });
     } catch (err) {
-        console.error(err);
         const logObj = {
             message: err.message,
             phone: req.body.phone,
+            email: req.body.email,
             stack: err.stack
         }
         logger.error('Error sending OTP:', logObj);
@@ -73,41 +74,46 @@ export const sendOTP = async (req, res) => {
 
 export const verifyOTP = async (req, res) => {
     try {
-        const { phone, otp, language } = req.body;
+        const { phone, email, otp, language } = req.body;
 
-        const isValid = await isOTPValid(phone, otp);
-        if (isValid) {
-        const customer = await customerSvc.getCustomerByPhone(phone);
-
-        const payload = customer
-            ? {
-                tokenType: AuthTokenType.CUSTOMER,
-                customerExists: true,
-                id: customer._id,
-                role: Roles.CUSTOMER,
-            }
-            : {
-                tokenType: AuthTokenType.TEMPORARY,
-                phone,
-                role: Roles.CUSTOMER,
-            };
-
-        if (language) {
-            payload.language = language; 
+        if (!phone && !email) {
+            return res.status(400).json({ message: 'Phone or Email required', key: 'missingIdentifier' });
         }
 
-        const token = customer
-            ? await generateToken(payload)
-            : await generateTempToken(payload);
-        return success(res, { token });
+        const isValid = await isOTPValid({ phone, email }, otp);
+
+        if (isValid) {
+            const customer = phone
+                ? await customerSvc.getCustomerByPhone(phone)
+                : await customerSvc.getCustomerByEmail(email);
+
+            const payload = customer
+                ? {
+                    tokenType: AuthTokenType.CUSTOMER,
+                    customerExists: true,
+                    id: customer._id,
+                    role: Roles.CUSTOMER,
+                }
+                : {
+                    tokenType: AuthTokenType.TEMPORARY,
+                    ...(phone ? { phone } : { email }),
+                    role: Roles.CUSTOMER,
+                };
+
+            if (language) payload.language = language;
+
+            const token = customer
+                ? await generateToken(payload)
+                : await generateTempToken(payload);
+            return success(res, { token });
         }
         return res.status(400).json({ message: 'Invalid OTP', key: 'invalidOTP' });
     } catch (err) {
-        const logObj = {
+        logger.error('Error verifying OTP:', {
             message: err.message,
-            phone: req.body.phone,
-        }
-        logger.error('Error verifying OTP:', logObj);
+            phone: req.body?.phone,
+            email: req.body?.email
+        });
         return handleError(err, res);
     }
 }
