@@ -157,8 +157,8 @@ paths:
               required:
               properties:
                 mpin:
-                  type: number
-                  example: 1234
+                  type: string
+                  example: "1234"
       responses:
         "204":
           description: Successful response

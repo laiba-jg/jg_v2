@@ -15,6 +15,7 @@ import { badRequest, created, internalServerError, noContent, notFound, success 
 
 export const create = async (req, res) => {
     try {
+        //todo get language from temp jwt
         const data = req.body;
         const validationResult = ProfileSchema.validate(data);
         if (validationResult.error) return badRequest(res, { message: validationResult.error.details, key: '400' });
