@@ -7,7 +7,7 @@ import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
-import customerSvc, { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin } from '../services/customerSvc.js';
+import customerSvc, { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin , resetMpin} from '../services/customerSvc.js';
 import { AuthTokenType } from '../util/enums.js';
 import { generateTempToken, generateToken } from '../util/jwt.js';
 import logger from '../util/logger.js';
@@ -119,6 +119,17 @@ export const verifyMpin = async (req, res) => {
     }
 }
 
+export const forgotMpin = async (req, res) => {
+    try {
+        const customerId = req.user.id; 
+        const result = await resetMpin(customerId);
+        return success(res, result);
+    } catch (err) {
+        logger.error('Error in forgotMpin:', { message: err.message, customerId: req.user.id });
+        return handleError(err, res);
+    }
+}
+
 export const getAll = async (req, res) => {
     try {
         const offset = req.query?.offset || 0;
@@ -162,6 +173,9 @@ const handleError = (err, res) => {
     }
     if (err instanceof MpinNotSetError) {
         return res.status(401).json({ message: 'No MPIN', key: 'mPinNotSet' });
+    }
+    if (err instanceof ForgotMpinError) {
+        return res.status(err.status).json({ message: err.message, key: 'forgotMpinFailed' });
     }
 
     return internalServerError(res);

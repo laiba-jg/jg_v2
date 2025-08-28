@@ -87,6 +87,18 @@ export const validateMpin = async (id, mpin) => {
     return true;
 }
 
+export const resetMpin = async (customerId) => {
+  const customer = await getCustomerById(customerId);
+  if (!customer) throw new CustomerNotFoundError();
+
+  // reset mpin
+  customer.isMpinSet = false;
+  customer.mpin = '';
+  await updateCustomer(customerId, customer);
+
+  return { message: 'mPIN reset successfully', mpinSet: false };
+};
+
 export const getAllCustomersByPagination = async (offset, limit) => {
     const count = await countCustomers();
     const data = await getAllCustomers({ offset, limit });
