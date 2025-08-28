@@ -11,7 +11,7 @@ const ProfileSchema = Joi.object({
         countryCode: Joi.string().required(),
         number: Joi.string().required(),
     }).required(),
-    isTermsAccepted: Joi.boolean().required() 
+    isTermsAccepted: Joi.boolean()
 }).unknown();
 
 export default ProfileSchema;
