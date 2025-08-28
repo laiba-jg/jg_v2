@@ -1,4 +1,4 @@
-export class ForgotMpinError extends Error {
+export default class ForgotMpinError extends Error {
   constructor(message = 'Failed to reset mPIN') {
     super(message);
     this.name = 'ForgotMpinError';

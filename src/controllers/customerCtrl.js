@@ -7,6 +7,7 @@ import NoPhoneError from '../errors/NoPhoneError.js';
 import SendOTPError from '../errors/SendOTPError.js';
 import WrongMpinError from '../errors/WrongMpinError.js';
 import ProfileSchema from '../schema/ProfileSchema.js';
+import ForgotMpinError from '../errors/ForgotMpinError.js';
 import customerSvc, { createProfile, generateAndSendOTP, getAllCustomersByPagination, isOTPValid, setMpin, totalCustomers, updateProfile as updateCustomerProfile, validateMpin , resetMpin} from '../services/customerSvc.js';
 import { AuthTokenType } from '../util/enums.js';
 import { generateTempToken, generateToken } from '../util/jwt.js';
@@ -133,13 +134,39 @@ export const createMpin = async (req, res) => {
 
 export const verifyMpin = async (req, res) => {
     try {
-        const id = req.user.id;
-        const { mpin } = req.body;
-        await validateMpin(id, mpin);
-        const token = await generateToken({ tokenType: AuthTokenType.CUSTOMER, id: req.user.id, role: req.user.role });
+        const { phone, email, mpin } = req.body;
+
+        if (!phone && !email) {
+            return res.status(400).json({ message: 'Phone or Email required', key: 'missingIdentifier' });
+        }
+
+        const customer = phone
+            ? await customerSvc.getCustomerByPhone(phone)
+            : await customerSvc.getCustomerByEmail(email);
+
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found', key: 'customerNotFound' });
+        }
+
+        await validateMpin(customer._id, mpin);
+
+        const payload = {
+            tokenType: AuthTokenType.CUSTOMER,
+            id: customer._id,
+            role: Roles.CUSTOMER,
+        };
+
+
+        const token = await generateToken(payload);
+
         return success(res, { token });
+
     } catch (err) {
-        logger.error('Error verifying MPIN:', err, req.params.id, req.body);
+        logger.error('Error verifying MPIN:', {
+            message: err.message,
+            phone: req.body?.phone,
+            email: req.body?.email
+        });
         return handleError(err, res);
     }
 }
